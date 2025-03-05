@@ -6,7 +6,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/LMD-TECH/fruit-rec-backend.git'
+                git branch: 'main', url: 'https://github.com/LMD-TECH/fruit-rec-backend.git'
             }
         }
         stage('Setup') {
