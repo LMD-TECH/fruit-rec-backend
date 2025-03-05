@@ -2,9 +2,9 @@
 
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
-from db.config import create_tables
+from core.dbconfig import create_tables
 from features.auth.logic import router as auth_router
-from features.activites.logic import router as activities_router
+from features.historique.logic import router as activities_router
 
 
 import logging
