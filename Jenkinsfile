@@ -1,41 +1,47 @@
 pipeline {
     agent any
-    environment {
-        VENV_DIR = 'venv'
-    }
+
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/LMD-TECH/fruit-rec-backend.git'
             }
         }
-        stage('Setup') {
+        stage('Build') {
             steps {
-                bat 'python -m venv venv'  // Crée un environnement virtuel
-                // bat '.\\venv\\Scripts\\pip install -r requirements.txt'  // Installe les dépendances
+                echo 'Building...'
             }
         }
-        stage('Run Script') {
+        stage('Test') {
             steps {
-                bat '.\\venv\\Scripts\\python app.py'  // Exécute le script Python
+                echo 'Testing...'
             }
         }
-        stage('Notify') {
+        stage('Deploy') {
             steps {
-                script {
-                    def result = currentBuild.result ?: 'SUCCESS'
-                    emailext subject: "Jenkins Build: ${result}",
-                        body: "Build Status: ${result}\nVoir Jenkins: ${env.BUILD_URL}",
-                        to: 'alphaoumar.diallo5@unchk.edu.sn'
-                }
+                echo 'Deploying...'
             }
         }
     }
+
     post {
+        success {
+            emailext (
+                subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                body: """<p>SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+                         <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
+                to: 'alphaoumar.diallo5@unchk.edu.sn',
+                mimeType: 'text/html'
+            )
+        }
         failure {
-            emailext subject: "Échec du build Jenkins",
-                body: "Échec du pipeline : ${env.BUILD_URL}",
-                to: 'alphaoumar.diallo5@unchk.edu.sn'
+            emailext (
+                subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                body: """<p>FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+                         <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
+                to: 'alphaoumar.diallo5@unchk.edu.sn',
+                mimeType: 'text/html'
+            )
         }
     }
 }
