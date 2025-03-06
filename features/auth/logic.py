@@ -69,7 +69,7 @@ async def login(response: Response, data: UtilisateurLogin):
 @router.post("/reset-password")
 async def reset_password(response: Response, data: UtilisateurReset):
     try:
-        return {'status': True, "data": data}
+        return {'status': True, "datas": data}
     except Exception as e:
         return {'status': False}
 
