@@ -4,3 +4,6 @@ __pycache__
 .idea
 *.db
 uploads/
+venv
+ven
+fruit-rec-backend
