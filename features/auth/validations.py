@@ -5,7 +5,7 @@ from typing import List, Optional
 
 class UtilisateurBase(BaseModel):
     nom_famille: str
-    photo_profile: str
+    photo_profile: str | None
     prenom: str
     email: EmailStr
     numero_telephone: str
@@ -22,6 +22,12 @@ class UtilisateurLogin(BaseModel):
 
 class UtilisateurReset(BaseModel):
     email: EmailStr
+
+
+class UtilisateurUpdatePassword(BaseModel):
+    mot_de_passe_actuel: str
+    nouveau_de_passe_actuel: str
+    confirm_nouveau_de_passe_actuel: str
 
 
 class UtilisateurResponse(UtilisateurBase):
