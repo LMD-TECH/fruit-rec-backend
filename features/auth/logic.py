@@ -7,7 +7,7 @@ from pydantic import EmailStr
 from typing import Annotated
 from .validations import UtilisateurLogin, UtilisateurBase, UtilisateurCreate, UtilisateurReset, UtilisateurUpdatePassword
 from .models import Utilisateur
-from .utils import get_password_hash, verify_password
+from .utils import get_password_hash, verify_password, authenticate_user, create_access_token, get_user
 from datetime import datetime, timedelta
 import os
 from ..uploads.logic import create_image_file
