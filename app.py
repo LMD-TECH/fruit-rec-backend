@@ -1,13 +1,20 @@
 
 
+import logging
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from core.dbconfig import create_tables
+from fastapi.staticfiles import StaticFiles
 from features.auth.logic import router as auth_router
 from features.historique.logic import router as activities_router
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 
-import logging
+# Lecture des Var Environment
+STATIC_DIR = os.getenv('STATIC_DIR')
+
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +27,9 @@ app.include_router(activities_router)
 @app.on_event("startup")
 def startup():
     create_tables()
+
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name=STATIC_DIR)
 
 
 @app.get("/")
