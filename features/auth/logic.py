@@ -19,7 +19,7 @@ router = APIRouter(
     tags=["Auth"],
 )
 
-# Endpoint pour recuperer touts les utilsateur
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # TO DO : créer un fichier .env pour stocker ses informations 
@@ -27,7 +27,7 @@ SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 # Arbitraire pour l'instant
 
-
+# Endpoint pour recuperer touts les utilsateur(pas important voir l'ensemble des utilisateurs)
 @router.get("/users")
 def get_all_users() -> list[UtilisateurBase]:
     return session.query(Utilisateur).all()
@@ -90,7 +90,7 @@ async def reset_password(response: Response, data: UtilisateurReset):
     except Exception as e:
         return {'status': False}
 
-
+# To Do : récuperation de la photo de profil
 @router.post("/register")
 def register(user: UtilisateurCreate):
 
