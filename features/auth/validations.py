@@ -20,8 +20,13 @@ class UtilisateurLogin(BaseModel):
     mot_de_passe: str
 
 
+class UtilisateurForgotPassword(BaseModel):
+    email: EmailStr = "mallemoussa091@gmail.com"
+
+
 class UtilisateurReset(BaseModel):
-    email: EmailStr
+    new_password: str
+    confirm_new_password: str
 
 
 class UtilisateurUpdatePassword(BaseModel):
