@@ -74,8 +74,7 @@ async def forgot_password(response: Response, data: UtilisateurForgotPassword):
         if not user:
             raise HTTPException(detail="User not found!", status_code=404)
 
-        # Send an email
-        APP_URL = os.getenv('APP_URL', "https://fruit-rec-frontend.vercel.app")
+        APP_URL = os.getenv('APP_URL', "")+"/auth/reset-password"
         code = generate_otp_code()
         user.code_otp = code
         user.code_otp_expiration = datetime.now() + timedelta(minutes=5)
@@ -217,7 +216,42 @@ async def register(
         session.add(user_mapped)
         session.commit()
         session.refresh(user_mapped)
-        return {"data": user}
+
+        APP_URL = os.getenv('APP_URL', "") + "/login"
+        content = f"""
+                    <html lang='fr'>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Bienvenue !</title>
+                    </head>
+                    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f3f4f6;">
+                        <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                            <h1 style="color: #4f46e5;">Bienvenue à bord !</h1>
+                            <p style="color: #374151; line-height: 1.6;">
+                                Bonjour {prenom},
+                            </p>
+                            <p style="color: #374151; line-height: 1.6;">
+                                Nous sommes ravis de vous accueillir parmi nous ! Vous avez maintenant accès à toutes nos fonctionnalités. Connectez-vous dès maintenant pour explorer votre espace personnalisé :
+                            </p>
+                            <a href="{APP_URL}/auth/login" 
+                            style="display: inline-block; padding: 10px 20px; margin-top: 20px; color: white; background-color: #4f46e5; text-decoration: none; border-radius: 5px;">
+                                Accéder à votre compte
+                            </a>
+                            <p style="color: #374151; line-height: 1.6;">
+                                Si vous avez besoin d'aide ou si vous avez des questions, notre équipe est à votre disposition.
+                            </p>
+                            <p style="color: #374151; line-height: 1.6;">
+                                À très bientôt,<br>L'équipe
+                            </p>
+                        </div>
+                    </body>
+                    </html>
+                """
+        msg = make_message(
+            "Votre compte a été crée avec succès.", content, to=email)
+        email_sent = send_email(msg, email,)
+
+        return {"data": user, "email": {"to": email, "is_sent": email_sent}}
     except HTTPException as e:
         response.status_code = e.status_code
         return e

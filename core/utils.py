@@ -21,15 +21,21 @@ def make_message(subject: str, content: str, to: str,) -> MIMEMultipart:
     return msg
 
 
-def send_email(msg: MIMEMultipart, to_addrs: str):
+def send_email(msg: MIMEMultipart, to_addrs: str) -> bool:
     port: int = int(os.getenv('PORT_SMTP', 587))
     from_addr: str = os.getenv("SMTP_SERVER_ADDR", "")
     host: str = os.getenv("SMTP_HOST", "")
     passowrd = os.getenv("SMTP_PASSWORD", "")
-    with smtplib.SMTP(host, port) as server:
-        server.starttls()
-        server.login(from_addr, passowrd)
-        server.sendmail(from_addr, to_addrs, msg.as_string())
+    try:
+        with smtplib.SMTP(host, port) as server:
+            server.starttls()
+            server.login(from_addr, passowrd)
+            server.sendmail(from_addr, to_addrs, msg.as_string())
+            print("Email sending")
+        return True
+    except Exception as e:
+        print("Error mail sending", e)
+        return False
 
 
 def generate_otp_code(nb: int = 6) -> str:
