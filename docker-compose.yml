@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  app:
+    image: mon-app-fastapi
+    container_name: fastapi_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - .:/app
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=False
+      - STATIC_DIR=/app/static  # Chemin vers le dossier statique dans le conteneur
+    restart: unless-stopped
