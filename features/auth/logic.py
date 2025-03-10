@@ -1,11 +1,12 @@
 
 from datetime import datetime
-from fastapi import APIRouter, Response, Request, Depends, HTTPException, status, File, UploadFile, Form
+from fastapi import APIRouter, Response, Request, Depends, HTTPException, status, File, UploadFile, Form, Cookie
 from fastapi.security import OAuth2PasswordBearer
 from core.lib.session import session
 from pydantic import EmailStr
-from typing import Annotated
-from .validations import UtilisateurLogin, UtilisateurBase, UtilisateurForgotPassword, UtilisateurReset, UtilisateurUpdatePassword
+from fastapi.responses import RedirectResponse
+from typing import Annotated, Optional
+from .validations import UtilisateurLogin, UtilisateurBase, UtilisateurForgotPassword, UtilisateurReset, UtilisateurUpdatePassword, AuthenticationResult
 from .models import Utilisateur
 from .utils import get_password_hash, verify_password, authenticate_user, create_access_token, get_user
 from datetime import datetime, timedelta, timezone
@@ -43,11 +44,11 @@ def get_all_users() -> list[UtilisateurBase]:
 
 
 @router.post("/login")
-async def login(response: Response, data: UtilisateurLogin):
+async def login(data: UtilisateurLogin, response: Response):
     try:
         mot_de_passe = data.mot_de_passe
         email = data.email
-        print("User_Authenticated", email)
+
         user_authenticated = authenticate_user(email, mot_de_passe)
         if not user_authenticated:
             return {"error": "invalid login"}
@@ -57,8 +58,10 @@ async def login(response: Response, data: UtilisateurLogin):
             data={"sub": user_authenticated.email}, expires_delta=access_token_expires
         )
 
-        response.set_cookie(key="token", value=access_token, httponly=True)
-        return {'status': True, "message": "Utilsateur connecté avec success."}
+        # response.set_cookie(key="token", value=access_token,
+        #                     expires=3600, max_age=access_token_expires, path="/", samesite="lax")
+
+        return {'status': True, "message": "Utilsateur connecté avec success.", "token": access_token}
     except Exception as e:
         print(e)
         response.status_code = 500
@@ -137,11 +140,11 @@ async def reset_password(token: str, data: UtilisateurReset):
     return {"status": True, "user": user}
 
 
-@router.post("/update-password")
-async def update_password(response: Response, request: Request, data: UtilisateurUpdatePassword):
+@router.post("/update-password/{auth_token}")
+async def update_password(auth_token: str, request: Request, data: UtilisateurUpdatePassword):
 
     try:
-        token = request._cookies.get("token")
+        token = auth_token
         if not token:
             raise Exception("Vous n'êtes pas connecté!")
 
@@ -172,6 +175,26 @@ async def update_password(response: Response, request: Request, data: Utilisateu
     except Exception as e:
         print(e)
         return {'status': False, "error": str(e)}
+
+
+@router.post("/is-authenticated/{auth_token}")
+def is_authenticated(auth_token: str, request: Request) -> AuthenticationResult:
+    autoken = request.cookies
+    print("Moussa", autoken)
+    token = auth_token
+    # print("Token: ", token)
+    user = None
+    if not token:
+        return {"is_authenticated": False, "user": user}
+    try:
+        payload = jwt.decode(token, key=SECRET_KEY, algorithms=ALGORITHM)
+        email = payload["sub"]
+        user = get_user(email)
+        if not user:
+            return {"is_authenticated": False, "user": user}
+    except:
+        return {"is_authenticated": False, "user": user}
+    return {"is_authenticated": True, "user": user}
 
 
 @router.post("/register")
@@ -242,7 +265,7 @@ async def register(
             "Votre compte a été crée avec succès.", content, to=email)
         email_result = send_email(msg, email,)
 
-        return {"data": user, "email": email_result}
+        return {"message": "Utilisateur créé avec success.", "email": email_result}
     except HTTPException as e:
         response.status_code = e.status_code
         return e
