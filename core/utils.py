@@ -31,11 +31,10 @@ def send_email(msg: MIMEMultipart, to_addrs: str) -> bool:
             server.starttls()
             server.login(from_addr, passowrd)
             server.sendmail(from_addr, to_addrs, msg.as_string())
-            print("Email sending")
-        return True
+        return {"to": to_addrs, "is_sent": True}
     except Exception as e:
         print("Error mail sending", e)
-        return False
+        return {"to": to_addrs, "is_sent": False, "error_message": str(e)}
 
 
 def generate_otp_code(nb: int = 6) -> str:

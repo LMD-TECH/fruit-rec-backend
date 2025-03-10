@@ -24,6 +24,11 @@ class UtilisateurForgotPassword(BaseModel):
     email: EmailStr = "mallemoussa091@gmail.com"
 
 
+class AuthenticationResult(BaseModel):
+    is_authenticated: bool
+    user: UtilisateurBase | None
+
+
 class UtilisateurReset(BaseModel):
     new_password: str
     confirm_new_password: str
@@ -31,8 +36,7 @@ class UtilisateurReset(BaseModel):
 
 class UtilisateurUpdatePassword(BaseModel):
     mot_de_passe_actuel: str
-    nouveau_de_passe_actuel: str
-    confirm_nouveau_de_passe_actuel: str
+    nouveau_de_passe: str
 
 
 class UtilisateurResponse(UtilisateurBase):
