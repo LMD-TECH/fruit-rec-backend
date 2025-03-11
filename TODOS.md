@@ -13,7 +13,7 @@
 - [x] Register OK
 - [x] Update profile
 - [x] Change password
-- [ ] Reset password
+- [x] Reset password
 - [ ] Create an activity
 - [ ] Voir les results d'une activity
 - [ ] Voir l'historique des ses activté
@@ -21,6 +21,6 @@
 ## Notes
 - [x] Gérer les tokens autrement (Bearer Authentication)
 - [x] Déplacer les thmplate de mail sur des .html (Se servir de Jinja2 pour les rendre)
-- [ ] deconn apres le update password
+- [x] deconn apres le update password
 - [ ] Finir avec les config mail sending (Recours à des srtvices tiers)
 - [ ] Revoir le Flow de création de compte (Validation de compte pour eviter les spams)

@@ -3,6 +3,7 @@ anyio==4.8.0
 bcrypt==4.2.1
 black==25.1.0
 certifi==2025.1.31
+charset-normalizer==3.4.1
 click==8.1.8
 colorama==0.4.6
 dnspython==2.7.0
@@ -35,6 +36,7 @@ PyJWT==2.10.1
 python-dotenv==1.0.1
 python-multipart==0.0.20
 PyYAML==6.0.2
+requests==2.32.3
 rich==13.9.4
 rich-toolkit==0.13.2
 shellingham==1.5.4
@@ -45,6 +47,7 @@ starlette==0.46.0
 targ==0.4.0
 typer==0.15.2
 typing_extensions==4.12.2
+urllib3==2.3.0
 uvicorn==0.34.0
 watchfiles==1.0.4
 websockets==15.0

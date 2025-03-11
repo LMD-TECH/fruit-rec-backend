@@ -91,13 +91,14 @@ async def forgot_password(response: Response, data: UtilisateurForgotPassword):
         session.refresh(user)
         link = APP_URL + f'?token={token}'
 
-        template = env.get_template("reset_password_email.html")
+        template = env.get_template("./email/reset_password_email.html")
         content = template.render(link=link)
 
         msg = make_message(
             "Code de verification", content, to=email)
         email_infos = send_email(msg, email,)
-        return {'status': True, "email": email_infos, "token": token}
+
+        return {'status': True, "email_infos": email_infos, "link": link}
 
     except HTTPException as e:
         response.status_code = e.status_code
@@ -108,30 +109,30 @@ async def forgot_password(response: Response, data: UtilisateurForgotPassword):
 
 
 @router.post("/reset-password/{token}")
-async def reset_password(token: str, data: UtilisateurReset):
+async def reset_password(token: str, reponse: Response, data: UtilisateurReset):
 
-    payload = jwt.decode(token, key=SECRET_KEY, algorithms=[ALGORITHM])
-    code_otp = payload.get("code_otp")
+    try:
+        payload = jwt.decode(token, key=SECRET_KEY, algorithms=[ALGORITHM])
+        code_otp = payload.get("code_otp")
 
-    user = session.query(Utilisateur).filter(
-        Utilisateur.code_otp == code_otp).first()
+        user = session.query(Utilisateur).filter(
+            Utilisateur.code_otp == code_otp).first()
 
-    if not user:
-        raise HTTPException(detail="User not found", status_code=404)
+        if not user:
+            raise HTTPException(detail="User not found", status_code=404)
 
-    new_password = data.new_password
-    confirm_new_password = data.confirm_new_password
-    if new_password != confirm_new_password:
-        raise HTTPException(
-            detail="Les mots de passe ne correspondent pas!", status_code=400)
+        new_password = data.new_password
 
-    user.mot_de_passe = new_password
-    user.code_otp = None
-    user.code_otp_expiration = None
-    session.add(user)
-    session.commit()
-    session.refresh(user)
-    return {"status": True, "user": user}
+        user.mot_de_passe = get_password_hash(new_password)
+        user.code_otp = None
+        user.code_otp_expiration = None
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+        return {"status": True, "user": user}
+    except Exception as e:
+        reponse.status_code = 500
+        return {"status": False, "error": str(e)}
 
 
 @router.post("/update-password/")
@@ -208,12 +209,12 @@ async def register(
         session.refresh(user_mapped)
 
         APP_URL = os.getenv('APP_URL', "") + "/auth/login"
-        template = env.get_template("email/register_message.html.html")
+        template = env.get_template("./email/register_message.html")
         content = template.render(link=APP_URL)
 
         msg = make_message(
-            "Votre compte a été crée avec succès.", content, to="codeagel223@gmail.com")
-        email_result = send_email(msg, "codeagel223@gmail.com",)
+            "Votre compte a été crée avec succès.", content, to=email)
+        email_result = send_email(msg, email,)
 
         return {"message": "Utilisateur créé avec success.", "email": email_result}
     except HTTPException as e:
@@ -269,7 +270,7 @@ async def update_profile(
         session.refresh(user_connected)
 
         APP_URL = os.getenv('APP_URL', "") + "/auth/login"
-        template = env.get_template("email/update_email.html.html")
+        template = env.get_template("./email/update_email.html")
         content = template.render(link=APP_URL)
         # msg = make_message(
         #     "Votre compte a été crée avec succès.", content, to=email)
@@ -300,7 +301,7 @@ def delete_user(email: str):
 
 @router.get("/sendemail")
 def sendemail(email: str):
-    template = env.get_template("email/test.html")
+    template = env.get_template("./email/test.html")
     content = template.render(link="https://accounts.google.com/")
     print("CONTET JINJA", content)
     msg = make_message(
