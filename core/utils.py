@@ -30,7 +30,7 @@ def make_message(subject: str, content: str, to: str,) -> MIMEMultipart:
     return msg
 
 
-def send_email_v1(msg: MIMEMultipart, to_addrs: str) -> dict:
+def send_email(msg: MIMEMultipart, to_addrs: str) -> dict:
     port: int = int(os.getenv('PORT_SMTP', 587))
     from_addr: str = os.getenv("SMTP_SERVER_ADDR", "").strip()
     host: str = os.getenv("SMTP_HOST", "").strip()
@@ -52,7 +52,7 @@ def send_email_v1(msg: MIMEMultipart, to_addrs: str) -> dict:
         return {"to": to_addrs, "is_sent": False, "error_message": str(e)}
 
 
-def send_email(msg: MIMEMultipart, to_addrs: str) -> dict:
+def send_email_v2(msg: MIMEMultipart, to_addrs: str) -> dict:
     maileroo_api_url = "https://smtp.maileroo.com/send"
     contentType = "multipart/form-data"
 

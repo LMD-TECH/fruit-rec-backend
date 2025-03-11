@@ -20,7 +20,7 @@
   
 ## Notes
 - [x] Gérer les tokens autrement (Bearer Authentication)
-- [ ] Finir avec les config mail sending (Recours à des srtvices tiers)
-- [ ] Déplacer les thmplate de mail sur des .html (Se servir de Jinja2 pour les rendre)
-- [ ] Revoir le Flow de création de compte (Validation de compte pour eviter les spams)
+- [x] Déplacer les thmplate de mail sur des .html (Se servir de Jinja2 pour les rendre)
 - [ ] deconn apres le update password
+- [ ] Finir avec les config mail sending (Recours à des srtvices tiers)
+- [ ] Revoir le Flow de création de compte (Validation de compte pour eviter les spams)

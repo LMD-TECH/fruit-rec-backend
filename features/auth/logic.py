@@ -6,6 +6,7 @@ from core.lib.session import session
 from pydantic import EmailStr
 from fastapi.responses import RedirectResponse
 from typing import Annotated, Optional
+from core.jinja2.env import env
 from .validations import UtilisateurLogin, UtilisateurBase, UtilisateurForgotPassword, UtilisateurReset, UtilisateurUpdatePassword, AuthenticationResult
 from .models import Utilisateur
 from .utils import get_password_hash, verify_password, authenticate_user, create_access_token
@@ -89,19 +90,9 @@ async def forgot_password(response: Response, data: UtilisateurForgotPassword):
         session.commit()
         session.refresh(user)
         link = APP_URL + f'?token={token}'
-        content = f"""
-                    <html>
-                    <body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;">
-                        <div style="background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                        <p style="font-size: 16px; color: #333;">Bonjour,</p>
-                        <p style="font-size: 16px; color: #333;">
-                            Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe :
-                        </p>
-                        <a href="{link}" style="font-size: 16px; color: #1E90FF; text-decoration: none;">Réinitialiser mon mot de passe</a>
-                        </div>
-                    </body>
-                    </html>
-                    """
+
+        template = env.get_template("reset_password_email.html")
+        content = template.render(link=link)
 
         msg = make_message(
             "Code de verification", content, to=email)
@@ -216,25 +207,9 @@ async def register(
         session.commit()
         session.refresh(user_mapped)
 
-        APP_URL = os.getenv('APP_URL', "") + "/login"
-        content = f"""
-                    <html lang='fr'>
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>Bienvenue</title>
-                    </head>
-                    <body style="font-family: Arial, sans-serif; background: #f3f4f6; text-align: center;">
-                        <div style="max-width: 600px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 8px;">
-                            <h1 style="color: #4f46e5;">Bienvenue, {prenom} !</h1>
-                            <p>Votre compte est prêt.</p>
-                            <a href="{APP_URL}/auth/login" style="display: inline-block; padding: 10px 20px; color: #fff; background: #4f46e5; text-decoration: none; border-radius: 5px;">
-                                Connexion
-                            </a>
-                            <p>Besoin d'aide ? Nous sommes là.</p>
-                        </div>
-                    </body>
-                    </html>
-                """
+        APP_URL = os.getenv('APP_URL', "") + "/auth/login"
+        template = env.get_template("email/register_message.html.html")
+        content = template.render(link=APP_URL)
 
         msg = make_message(
             "Votre compte a été crée avec succès.", content, to="codeagel223@gmail.com")
@@ -293,36 +268,9 @@ async def update_profile(
         session.add(user_connected)
         session.refresh(user_connected)
 
-        APP_URL = os.getenv('APP_URL', "") + "/login"
-        content = f"""
-                    <html lang='fr'>
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>Bienvenue !</title>
-                    </head>
-                    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f3f4f6;">
-                        <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-                            <h1 style="color: #4f46e5;">Bienvenue à bord !</h1>
-                            <p style="color: #374151; line-height: 1.6;">
-                                Bonjour {prenom},
-                            </p>
-                            <p style="color: #374151; line-height: 1.6;">
-                                Nous sommes ravis de vous accueillir parmi nous ! Vous avez maintenant accès à toutes nos fonctionnalités. Connectez-vous dès maintenant pour explorer votre espace personnalisé :
-                            </p>
-                            <a href="{APP_URL}/auth/login"
-                            style="display: inline-block; padding: 10px 20px; margin-top: 20px; color: white; background-color: #4f46e5; text-decoration: none; border-radius: 5px;">
-                                Accéder à votre compte
-                            </a>
-                            <p style="color: #374151; line-height: 1.6;">
-                                Si vous avez besoin d'aide ou si vous avez des questions, notre équipe est à votre disposition.
-                            </p>
-                            <p style="color: #374151; line-height: 1.6;">
-                                À très bientôt,<br>L'équipe
-                            </p>
-                        </div>
-                    </body>
-                    </html>
-                """
+        APP_URL = os.getenv('APP_URL', "") + "/auth/login"
+        template = env.get_template("email/update_email.html.html")
+        content = template.render(link=APP_URL)
         # msg = make_message(
         #     "Votre compte a été crée avec succès.", content, to=email)
         # email_result = send_email(msg, email,)
@@ -352,7 +300,10 @@ def delete_user(email: str):
 
 @router.get("/sendemail")
 def sendemail(email: str):
+    template = env.get_template("email/test.html")
+    content = template.render(link="https://accounts.google.com/")
+    print("CONTET JINJA", content)
     msg = make_message(
-        "Votre compte a été crée avec succès.", "Bonjour tout le monde.", to=email)
+        "Votre compte a été crée avec succès.", content, to=email)
     email = send_email(msg, to_addrs=email)
     return email
