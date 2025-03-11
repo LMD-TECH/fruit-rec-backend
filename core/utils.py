@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from fastapi import HTTPException
+from fastapi import HTTPException, Request, status
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -9,6 +9,7 @@ from datetime import datetime
 from core.lib.session import session
 import jwt
 import random
+import requests
 from features.auth.models import Utilisateur
 
 load_dotenv()
@@ -29,19 +30,44 @@ def make_message(subject: str, content: str, to: str,) -> MIMEMultipart:
     return msg
 
 
-def send_email(msg: MIMEMultipart, to_addrs: str) -> bool:
+def send_email_v1(msg: MIMEMultipart, to_addrs: str) -> dict:
     port: int = int(os.getenv('PORT_SMTP', 587))
-    from_addr: str = os.getenv("SMTP_SERVER_ADDR", "")
-    host: str = os.getenv("SMTP_HOST", "")
-    passowrd = os.getenv("SMTP_PASSWORD", "")
+    from_addr: str = os.getenv("SMTP_SERVER_ADDR", "").strip()
+    host: str = os.getenv("SMTP_HOST", "").strip()
+    password = os.getenv("SMTP_PASSWORD", "").strip()
+
+    if not all([port, from_addr, host, password]):
+        return {"to": to_addrs, "is_sent": False, "error_message": "Missing SMTP configuration"}
+
     try:
         with smtplib.SMTP(host, port) as server:
             server.starttls()
-            server.login(from_addr, passowrd)
+            server.login(from_addr, password)
             server.sendmail(from_addr, to_addrs, msg.as_string())
+
         return {"to": to_addrs, "is_sent": True}
+
     except Exception as e:
-        print("Error mail sending", e)
+        print("Error sending email:", e)
+        return {"to": to_addrs, "is_sent": False, "error_message": str(e)}
+
+
+def send_email(msg: MIMEMultipart, to_addrs: str) -> dict:
+    maileroo_api_url = "https://smtp.maileroo.com/send"
+    contentType = "multipart/form-data"
+
+    try:
+        response = requests.post(maileroo_api_url, json={
+            "from": "APP Name <fruit-rec-app@0c521d74db3aeeb4.maileroo.org>",
+            "to": to_addrs,
+            "subject": "Hello test",
+            "plain": "Bonjour tout le monde"
+        }, headers={
+            "Content-Type": contentType, "X-API-Key": "d67ca20aa009f2bf98abe2510f5c87d9477f2bba906ab1c3fb5fbb77f809ee9d"
+        })
+        return {"to": to_addrs, "is_sent": True, "response": response.json()}
+
+    except Exception as e:
         return {"to": to_addrs, "is_sent": False, "error_message": str(e)}
 
 
@@ -83,3 +109,11 @@ def get_user_from_session(token):
         raise HTTPException(
             status_code=404, detail="Aucun utilisateeur trouvé !")
     return user
+
+
+def get_auth_token_in_request(request: Request):
+    bearer, token = request._headers["authorization"].split(" ")
+    if not bearer != "Bearer " or not token:
+        raise HTTPException(
+            details="Invalid bearer", status_code=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
+    return token

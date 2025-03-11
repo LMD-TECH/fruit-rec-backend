@@ -15,8 +15,8 @@ import os
 from ..uploads.logic import create_image_file
 from dotenv import load_dotenv
 import jwt
-from core.utils import (generate_otp_code, get_user_from_session, make_message, send_email,
-                        validate_phone_number, get_user)
+from core.utils import (generate_otp_code, get_auth_token_in_request, get_user,
+                        get_user_from_session, make_message, send_email, validate_phone_number)
 from sqlalchemy.exc import IntegrityError
 
 load_dotenv()
@@ -143,14 +143,6 @@ async def reset_password(token: str, data: UtilisateurReset):
     return {"status": True, "user": user}
 
 
-def get_auth_token_in_request(request: Request):
-    bearer, token = request._headers["authorization"].split(" ")
-    if not bearer != "Bearer " or not token:
-        raise HTTPException(
-            details="Invalid bearer", status_code=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-    return token
-
-
 @router.post("/update-password/")
 async def update_password(request: Request, response: Response, data: UtilisateurUpdatePassword):
 
@@ -229,34 +221,24 @@ async def register(
                     <html lang='fr'>
                     <head>
                         <meta charset="UTF-8">
-                        <title>Bienvenue !</title>
+                        <title>Bienvenue</title>
                     </head>
-                    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f3f4f6;">
-                        <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-                            <h1 style="color: #4f46e5;">Bienvenue à bord !</h1>
-                            <p style="color: #374151; line-height: 1.6;">
-                                Bonjour {prenom},
-                            </p>
-                            <p style="color: #374151; line-height: 1.6;">
-                                Nous sommes ravis de vous accueillir parmi nous ! Vous avez maintenant accès à toutes nos fonctionnalités. Connectez-vous dès maintenant pour explorer votre espace personnalisé :
-                            </p>
-                            <a href="{APP_URL}/auth/login"
-                            style="display: inline-block; padding: 10px 20px; margin-top: 20px; color: white; background-color: #4f46e5; text-decoration: none; border-radius: 5px;">
-                                Accéder à votre compte
+                    <body style="font-family: Arial, sans-serif; background: #f3f4f6; text-align: center;">
+                        <div style="max-width: 600px; margin: 20px auto; background: #fff; padding: 20px; border-radius: 8px;">
+                            <h1 style="color: #4f46e5;">Bienvenue, {prenom} !</h1>
+                            <p>Votre compte est prêt.</p>
+                            <a href="{APP_URL}/auth/login" style="display: inline-block; padding: 10px 20px; color: #fff; background: #4f46e5; text-decoration: none; border-radius: 5px;">
+                                Connexion
                             </a>
-                            <p style="color: #374151; line-height: 1.6;">
-                                Si vous avez besoin d'aide ou si vous avez des questions, notre équipe est à votre disposition.
-                            </p>
-                            <p style="color: #374151; line-height: 1.6;">
-                                À très bientôt,<br>L'équipe
-                            </p>
+                            <p>Besoin d'aide ? Nous sommes là.</p>
                         </div>
                     </body>
                     </html>
                 """
+
         msg = make_message(
-            "Votre compte a été crée avec succès.", content, to=email)
-        email_result = send_email(msg, email,)
+            "Votre compte a été crée avec succès.", content, to="codeagel223@gmail.com")
+        email_result = send_email(msg, "codeagel223@gmail.com",)
 
         return {"message": "Utilisateur créé avec success.", "email": email_result}
     except HTTPException as e:
@@ -366,3 +348,11 @@ def delete_user(email: str):
     session.delete(user)
     session.commit()
     return {"success": True}
+
+
+@router.get("/sendemail")
+def sendemail(email: str):
+    msg = make_message(
+        "Votre compte a été crée avec succès.", "Bonjour tout le monde.", to=email)
+    email = send_email(msg, to_addrs=email)
+    return email
