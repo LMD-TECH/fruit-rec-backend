@@ -5,9 +5,17 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import re
+from datetime import datetime
+from core.lib.session import session
+import jwt
 import random
+from features.auth.models import Utilisateur
 
 load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY", "")
+ALGORITHM = os.getenv("ALGORITHM", "")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 10))
 
 
 def make_message(subject: str, content: str, to: str,) -> MIMEMultipart:
@@ -47,3 +55,31 @@ def validate_phone_number(phone_number):
     if re.match(phone_regex, phone_number):
         return phone_number
     raise HTTPException(detail="Numéro de tel invalid", status_code=500)
+
+
+def get_user(email: str):
+    return session.query(Utilisateur).filter(
+        Utilisateur.email == email).first()
+
+
+def get_user_from_session(token):
+    if not token:
+        raise Exception("Vous n'êtes pas connecté!")
+
+    payload_jwt_decoded = jwt.decode(
+        token, key=SECRET_KEY, algorithms=[ALGORITHM])
+
+    current_time = datetime.utcnow()
+    expiration_time = datetime.utcfromtimestamp(payload_jwt_decoded["exp"])
+
+    if expiration_time < current_time:
+        raise HTTPException(detail="Le token a expiré!", status_code=401)
+
+    if not payload_jwt_decoded:
+        raise HTTPException(detail="Token invalide!", status_code=401)
+
+    user = get_user(payload_jwt_decoded["sub"])
+    if not user:
+        raise HTTPException(
+            status_code=404, detail="Aucun utilisateeur trouvé !")
+    return user

@@ -8,13 +8,15 @@ from fastapi.responses import RedirectResponse
 from typing import Annotated, Optional
 from .validations import UtilisateurLogin, UtilisateurBase, UtilisateurForgotPassword, UtilisateurReset, UtilisateurUpdatePassword, AuthenticationResult
 from .models import Utilisateur
-from .utils import get_password_hash, verify_password, authenticate_user, create_access_token, get_user
+from .utils import get_password_hash, verify_password, authenticate_user, create_access_token
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urljoin
 import os
 from ..uploads.logic import create_image_file
 from dotenv import load_dotenv
 import jwt
-from core.utils import make_message, send_email, generate_otp_code, validate_phone_number
+from core.utils import (generate_otp_code, get_user_from_session, make_message, send_email,
+                        validate_phone_number, get_user)
 from sqlalchemy.exc import IntegrityError
 
 load_dotenv()
@@ -51,7 +53,8 @@ async def login(data: UtilisateurLogin, response: Response):
 
         user_authenticated = authenticate_user(email, mot_de_passe)
         if not user_authenticated:
-            return {"error": "invalid login"}
+            response.status_code = 404
+            return {"message": "Identifiants incorrects !"}
 
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
@@ -140,27 +143,21 @@ async def reset_password(token: str, data: UtilisateurReset):
     return {"status": True, "user": user}
 
 
-@router.post("/update-password/{auth_token}")
-async def update_password(auth_token: str, request: Request, data: UtilisateurUpdatePassword):
+def get_auth_token_in_request(request: Request):
+    bearer, token = request._headers["authorization"].split(" ")
+    if not bearer != "Bearer " or not token:
+        raise HTTPException(
+            details="Invalid bearer", status_code=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
+    return token
+
+
+@router.post("/update-password/")
+async def update_password(request: Request, response: Response, data: UtilisateurUpdatePassword):
 
     try:
-        token = auth_token
-        if not token:
-            raise Exception("Vous n'êtes pas connecté!")
+        token = get_auth_token_in_request(request)
 
-        payload_jwt_decoded = jwt.decode(
-            token, key=SECRET_KEY, algorithms=[ALGORITHM])
-
-        current_time = datetime.utcnow()
-        expiration_time = datetime.utcfromtimestamp(payload_jwt_decoded["exp"])
-
-        if expiration_time < current_time:
-            raise Exception("Le token a expiré!")
-
-        if not payload_jwt_decoded:
-            raise Exception("Token invalide!")
-
-        user = get_user(payload_jwt_decoded["sub"])
+        user = get_user_from_session(token)
 
         if not verify_password(data.mot_de_passe_actuel, user.mot_de_passe):
             raise Exception(
@@ -171,29 +168,25 @@ async def update_password(auth_token: str, request: Request, data: UtilisateurUp
         session.commit()
         session.refresh(user)
 
-        return {'status': True, "user": user, "data": data}
+        return {'status': True, "user": user}
     except Exception as e:
         print(e)
+        response.status_code = 500
         return {'status': False, "error": str(e)}
 
 
-@router.post("/is-authenticated/{auth_token}")
-def is_authenticated(auth_token: str, request: Request) -> AuthenticationResult:
-    autoken = request.cookies
-    print("Moussa", autoken)
-    token = auth_token
-    # print("Token: ", token)
+@router.post("/is-authenticated/")
+def is_authenticated(request: Request) -> AuthenticationResult:
+    # autoken = request.cookies
+    token = get_auth_token_in_request(request)
     user = None
-    if not token:
-        return {"is_authenticated": False, "user": user}
     try:
-        payload = jwt.decode(token, key=SECRET_KEY, algorithms=ALGORITHM)
-        email = payload["sub"]
-        user = get_user(email)
-        if not user:
-            return {"is_authenticated": False, "user": user}
+        user = get_user_from_session(token)
     except:
         return {"is_authenticated": False, "user": user}
+
+    if user.photo_profile and not user.photo_profile.startswith(("http://", "https://")):
+        user.photo_profile = urljoin(str(request.base_url), user.photo_profile)
     return {"is_authenticated": True, "user": user}
 
 
@@ -247,7 +240,7 @@ async def register(
                             <p style="color: #374151; line-height: 1.6;">
                                 Nous sommes ravis de vous accueillir parmi nous ! Vous avez maintenant accès à toutes nos fonctionnalités. Connectez-vous dès maintenant pour explorer votre espace personnalisé :
                             </p>
-                            <a href="{APP_URL}/auth/login" 
+                            <a href="{APP_URL}/auth/login"
                             style="display: inline-block; padding: 10px 20px; margin-top: 20px; color: white; background-color: #4f46e5; text-decoration: none; border-radius: 5px;">
                                 Accéder à votre compte
                             </a>
@@ -266,6 +259,93 @@ async def register(
         email_result = send_email(msg, email,)
 
         return {"message": "Utilisateur créé avec success.", "email": email_result}
+    except HTTPException as e:
+        response.status_code = e.status_code
+        return e
+
+    except IntegrityError as e:
+        response.status_code = 500
+        return {"error": "Cet email ou ce numéro de téléphone existe déjà!"}
+    except Exception as e:
+        response.status_code = 500
+        return {"error": str(e)}
+    finally:
+        session.rollback()
+
+
+@router.post("/update-profile/")
+async def update_profile(
+    request: Request,
+    response: Response,
+    nom_famille: Annotated[str, Form()],
+    numero_telephone: Annotated[str, Form()],
+    prenom: Annotated[str, Form()],
+    # email: Annotated[EmailStr, Form()],
+    # mot_de_passe: Annotated[str, Form()],
+    photo_profile: Annotated[UploadFile | str, File(
+        description="A file read as UploadFile")] = "",
+):
+    try:
+        token = get_auth_token_in_request(request)
+        user_connected = get_user_from_session(token)
+        image_created_url = None
+        if photo_profile and not isinstance(photo_profile, str):
+            try:
+                image_created_url = create_image_file(photo_profile)
+            except Exception as e:
+                image_created_url = user_connected.photo_profile
+        else:
+            image_created_url = user_connected.photo_profile
+
+        validate_phone_number(numero_telephone)
+
+        # user_connected.mot_de_passe = get_password_hash(mot_de_passe)
+        # user_connected.email = email
+
+        user_connected.nom_famille = nom_famille
+        user_connected.prenom = prenom
+        user_connected.numero_telephone = numero_telephone
+        user_connected.photo_profile = image_created_url
+
+        session.commit()
+        session.add(user_connected)
+        session.refresh(user_connected)
+
+        APP_URL = os.getenv('APP_URL', "") + "/login"
+        content = f"""
+                    <html lang='fr'>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Bienvenue !</title>
+                    </head>
+                    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f3f4f6;">
+                        <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                            <h1 style="color: #4f46e5;">Bienvenue à bord !</h1>
+                            <p style="color: #374151; line-height: 1.6;">
+                                Bonjour {prenom},
+                            </p>
+                            <p style="color: #374151; line-height: 1.6;">
+                                Nous sommes ravis de vous accueillir parmi nous ! Vous avez maintenant accès à toutes nos fonctionnalités. Connectez-vous dès maintenant pour explorer votre espace personnalisé :
+                            </p>
+                            <a href="{APP_URL}/auth/login"
+                            style="display: inline-block; padding: 10px 20px; margin-top: 20px; color: white; background-color: #4f46e5; text-decoration: none; border-radius: 5px;">
+                                Accéder à votre compte
+                            </a>
+                            <p style="color: #374151; line-height: 1.6;">
+                                Si vous avez besoin d'aide ou si vous avez des questions, notre équipe est à votre disposition.
+                            </p>
+                            <p style="color: #374151; line-height: 1.6;">
+                                À très bientôt,<br>L'équipe
+                            </p>
+                        </div>
+                    </body>
+                    </html>
+                """
+        # msg = make_message(
+        #     "Votre compte a été crée avec succès.", content, to=email)
+        # email_result = send_email(msg, email,)
+
+        return {"message": "Utilisateur modifié avec success.", }
     except HTTPException as e:
         response.status_code = e.status_code
         return e
