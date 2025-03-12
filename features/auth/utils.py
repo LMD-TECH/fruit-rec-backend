@@ -1,7 +1,7 @@
 from passlib.context import CryptContext
 
 from datetime import datetime
-from core.lib.session import session
+from core.utils import get_user
 from .models import Utilisateur
 from datetime import datetime, timezone, timedelta
 import os
@@ -23,11 +23,6 @@ def verify_password(plain_password, hashed_password):
 
 def get_password_hash(password):
     return pwd_context.hash(password)
-
-
-def get_user(email: str):
-    return session.query(Utilisateur).filter(
-        Utilisateur.email == email).first()
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
