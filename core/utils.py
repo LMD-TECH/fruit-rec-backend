@@ -88,12 +88,12 @@ def get_user(email: str):
         Utilisateur.email == email).first()
 
 
-def get_user_from_session(token):
+def get_user_from_session(token, key=SECRET_KEY, algorithms: list = [ALGORITHM]):
     if not token:
         raise Exception("Vous n'êtes pas connecté!")
 
     payload_jwt_decoded = jwt.decode(
-        token, key=SECRET_KEY, algorithms=[ALGORITHM])
+        token, key=key, algorithms=algorithms)
 
     current_time = datetime.utcnow()
     expiration_time = datetime.utcfromtimestamp(payload_jwt_decoded["exp"])
