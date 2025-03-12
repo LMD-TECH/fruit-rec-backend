@@ -5,6 +5,8 @@
 - [x] Changer son mot de passe
 - [x] Mettre à jour ses informations de profile
 - [ ] Créer une activité
+  - [x] Recuperationde 
+  - [ ] jdvehzg
 - [ ] Voir les resultats d'une activité
 - [ ] Voir l'historique de ses activité
   
@@ -22,5 +24,5 @@
 - [x] Gérer les tokens autrement (Bearer Authentication)
 - [x] Déplacer les thmplate de mail sur des .html (Se servir de Jinja2 pour les rendre)
 - [x] deconn apres le update password
-- [ ] Finir avec les config mail sending (Recours à des srtvices tiers)
-- [ ] Revoir le Flow de création de compte (Validation de compte pour eviter les spams)
+- [x] Finir avec les config mail sending (Recours à des srtvices tiers)
+- [x] Revoir le Flow de création de compte (Validation de compte pour eviter les spams)
