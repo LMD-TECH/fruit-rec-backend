@@ -5,6 +5,8 @@
 - [x] Changer son mot de passe
 - [x] Mettre à jour ses informations de profile
 - [ ] Créer une activité
+  - [x] Recuperationde 
+  - [ ] jdvehzg
 - [ ] Voir les resultats d'une activité
 - [ ] Voir l'historique de ses activité
   
