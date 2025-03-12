@@ -25,7 +25,7 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(data: dict, expires_delta: timedelta | None = None, SECRET_KEY=SECRET_KEY, ALGORITHM=ALGORITHM):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -36,12 +36,17 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
+def verify_jwt(token, key=SECRET_KEY, algorithms=ALGORITHM):
+    return jwt.decode(token, algorithms=algorithms, key=key)
+
+
 def authenticate_user(email: str, mot_de_passe: str):
     user = get_user(email)
     if not user:
         return False
+    if not user.email_verified:
+        return False
 
-    print("decoded_password", user.mot_de_passe)
     mot_de_passe_correspond = verify_password(mot_de_passe, user.mot_de_passe)
     if not mot_de_passe_correspond:
         return False

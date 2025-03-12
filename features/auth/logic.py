@@ -7,6 +7,7 @@ from pydantic import EmailStr
 from fastapi.responses import RedirectResponse
 from typing import Annotated, Optional
 from core.jinja2.env import env
+from features.auth.utils import verify_jwt
 from .validations import UtilisateurLogin, UtilisateurBase, UtilisateurForgotPassword, UtilisateurReset, UtilisateurUpdatePassword, AuthenticationResult
 from .models import Utilisateur
 from .utils import get_password_hash, verify_password, authenticate_user, create_access_token
@@ -112,8 +113,8 @@ async def forgot_password(response: Response, data: UtilisateurForgotPassword):
 async def reset_password(token: str, reponse: Response, data: UtilisateurReset):
 
     try:
-        payload = jwt.decode(token, key=SECRET_KEY, algorithms=[ALGORITHM])
-        code_otp = payload.get("code_otp")
+        payload = verify_jwt(token, key=SECRET_KEY, algorithms=[ALGORITHM])
+        code_otp = payload.get("code_otp", "")
 
         user = session.query(Utilisateur).filter(
             Utilisateur.code_otp == code_otp).first()
@@ -174,9 +175,24 @@ def is_authenticated(request: Request) -> AuthenticationResult:
     return {"is_authenticated": True, "user": user}
 
 
+@router.get("/validate-email")
+def validate_email(token: str | None, request: Request):
+    if not token:
+        raise HTTPException(status_code=401, message="Token is required")
+    payload = verify_jwt(token)
+    email = payload.get('user_email', "")
+    user = get_user(email)
+    user.email_verified = True
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return {"status": True}
+
+
 @router.post("/register")
 async def register(
     response: Response,
+    requests: Request,
     nom_famille: Annotated[str, Form()],
     numero_telephone: Annotated[str, Form()],
     prenom: Annotated[str, Form()],
@@ -210,9 +226,13 @@ async def register(
         session.commit()
         session.refresh(user_mapped)
 
-        APP_URL = os.getenv('APP_URL', "") + "/auth/login"
+        access_token_expires = timedelta(hours=24)
+        token = create_access_token(
+            data={"user_email": email}, expires_delta=access_token_expires)
+
+        link = os.getenv('APP_URL', "") + "/auth/validate-account?token="+token
         template = env.get_template("./email/register_message.html")
-        content = template.render(link=APP_URL)
+        content = template.render(link=link, prenom=prenom)
 
         msg = make_message(
             "Votre compte a été crée avec succès.", content, to=email)

@@ -1,7 +1,7 @@
 # Models
 from core.dbconfig import Base
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, JSON
+from sqlalchemy import Column, Boolean, String, ForeignKey, DateTime, JSON
 import uuid
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -16,6 +16,7 @@ class Utilisateur(Base):
     nom_famille = Column(String, nullable=False)
     prenom = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
+    email_verified = Column(Boolean, default=False)
     numero_telephone = Column(String, unique=True, nullable=False)
     mot_de_passe = Column(String, nullable=False)
     code_otp = Column(String, nullable=True)
