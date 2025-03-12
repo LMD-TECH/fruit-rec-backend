@@ -3,10 +3,10 @@
 - [x] Conxion à son compte
 - [x] Reinitiliser son mot de passe
 - [x] Changer son mot de passe
+- [ ] Ecrire les tests unitaire pour chaque EndPoint.
 - [x] Mettre à jour ses informations de profile
 - [ ] Créer une activité
   - [x] Recuperationde 
-  - [ ] jdvehzg
 - [ ] Voir les resultats d'une activité
 - [ ] Voir l'historique de ses activité
   
