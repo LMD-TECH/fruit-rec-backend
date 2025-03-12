@@ -2,9 +2,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship, DeclarativeBase
 
 
+
 class Base(DeclarativeBase):
     pass
-
 
 sqlite_file_name = "db.db"
 chaine_de_connexion = f"sqlite:///{sqlite_file_name}"
