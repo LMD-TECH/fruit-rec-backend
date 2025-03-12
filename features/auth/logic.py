@@ -30,7 +30,7 @@ router = APIRouter(
     tags=["Auth"],
 )
 
-# Endpoint pour recuperer touts les utilsateur
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -41,7 +41,7 @@ UPLOADS_DIR = os.getenv("UPLOADS_DIR", "static")
 
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 
-
+# Endpoint pour recuperer touts les utilsateur(pas important voir l'ensemble des utilisateurs)
 @router.get("/users")
 def get_all_users() -> list[UtilisateurBase]:
     return session.query(Utilisateur).all()
@@ -204,6 +204,8 @@ async def register(
     try:
 
         image_created_url = None
+        if not photo_profile.content_type.startswith("image/"):
+            raise HTTPException(status_code=400, detail=f"Le fichier {photo_profile.filename} n'est pas une image")
         if photo_profile:
             try:
                 image_created_url = create_image_file(photo_profile)
