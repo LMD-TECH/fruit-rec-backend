@@ -9,6 +9,7 @@ class UtilisateurBase(BaseModel):
     prenom: str
     email: EmailStr
     numero_telephone: str
+    email_verified: bool
 
 
 class UtilisateurCreate(UtilisateurBase):
