@@ -6,4 +6,6 @@ __pycache__
 uploads/
 venv
 ven
+.vscode
+*.db-journal
 fruit-rec-backend
