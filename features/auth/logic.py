@@ -2,12 +2,14 @@
 from datetime import datetime
 from fastapi import APIRouter, Response, Request, Depends, HTTPException, status, File, UploadFile, Form, Cookie
 from fastapi.security import OAuth2PasswordBearer
-from core.lib.session import session
+# from core.lib.session import session
 from pydantic import EmailStr
+from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
 from typing import Annotated, Optional
 from core.jinja2.env import env
 from features.auth.utils import verify_jwt
+from core.dbconfig import get_db
 from .validations import UtilisateurLogin, UtilisateurBase, UtilisateurForgotPassword, UtilisateurReset, UtilisateurUpdatePassword, AuthenticationResult
 from .models import Utilisateur
 from .utils import get_password_hash, verify_password, authenticate_user, create_access_token
@@ -31,7 +33,6 @@ router = APIRouter(
 )
 
 
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 SECRET_KEY = os.getenv("SECRET_KEY", "")
@@ -42,18 +43,21 @@ UPLOADS_DIR = os.getenv("UPLOADS_DIR", "static")
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 # Endpoint pour recuperer touts les utilsateur(pas important voir l'ensemble des utilisateurs)
+
+
 @router.get("/users")
-def get_all_users() -> list[UtilisateurBase]:
+def get_all_users(session: Session = Depends(get_db)) -> list[UtilisateurBase]:
+    print("HelloString")
     return session.query(Utilisateur).all()
 
 
 @router.post("/login")
-async def login(data: UtilisateurLogin, response: Response):
+async def login(data: UtilisateurLogin, response: Response, session: Session = Depends(get_db)):
     try:
         mot_de_passe = data.mot_de_passe
         email = data.email
 
-        user_authenticated = authenticate_user(email, mot_de_passe)
+        user_authenticated = authenticate_user(email, mot_de_passe, session)
         if not user_authenticated:
             response.status_code = 404
             return {"message": "Identifiants incorrects !"}
@@ -68,16 +72,16 @@ async def login(data: UtilisateurLogin, response: Response):
 
         return {'status': True, "message": "Utilsateur connecté avec success.", "token": access_token}
     except Exception as e:
-        print(e)
+        print("ErrorLogin", e)
         response.status_code = 500
         return {'status': False, "message": "Erreur de connexion", "error": str(e)}
 
 
 @router.post("/forgot-password")
-async def forgot_password(response: Response, data: UtilisateurForgotPassword):
+async def forgot_password(response: Response, data: UtilisateurForgotPassword, session: Session = Depends(get_db)):
     try:
         email = data.email
-        user = get_user(email)
+        user = get_user(email, session)
         if not user:
             raise HTTPException(detail="User not found!", status_code=404)
 
@@ -99,7 +103,7 @@ async def forgot_password(response: Response, data: UtilisateurForgotPassword):
             "Code de verification", content, to=email)
         email_infos = send_email(msg, email,)
 
-        return {'status': True, "email_infos": email_infos, "link": link}
+        return {'status': True, "token": token, "email_infos": email_infos, "link": link}
 
     except HTTPException as e:
         response.status_code = e.status_code
@@ -110,7 +114,7 @@ async def forgot_password(response: Response, data: UtilisateurForgotPassword):
 
 
 @router.post("/reset-password/{token}")
-async def reset_password(token: str, reponse: Response, data: UtilisateurReset):
+async def reset_password(token: str, reponse: Response, data: UtilisateurReset, session: Session = Depends(get_db)):
 
     try:
         payload = verify_jwt(token, key=SECRET_KEY, algorithms=[ALGORITHM])
@@ -137,12 +141,12 @@ async def reset_password(token: str, reponse: Response, data: UtilisateurReset):
 
 
 @router.post("/update-password/")
-async def update_password(request: Request, response: Response, data: UtilisateurUpdatePassword):
+async def update_password(request: Request, response: Response, data: UtilisateurUpdatePassword, session: Session = Depends(get_db)):
 
     try:
         token = get_auth_token_in_request(request)
 
-        user = get_user_from_session(token)
+        user = get_user_from_session(session, token)
 
         if not verify_password(data.mot_de_passe_actuel, user.mot_de_passe):
             raise Exception(
@@ -161,12 +165,12 @@ async def update_password(request: Request, response: Response, data: Utilisateu
 
 
 @router.post("/is-authenticated/")
-def is_authenticated(request: Request) -> AuthenticationResult:
+def is_authenticated(request: Request, session: Session = Depends(get_db)) -> AuthenticationResult:
     # autoken = request.cookies
     token = get_auth_token_in_request(request)
     user = None
     try:
-        user = get_user_from_session(token)
+        user = get_user_from_session(session, token)
     except:
         return {"is_authenticated": False, "user": user}
 
@@ -176,12 +180,12 @@ def is_authenticated(request: Request) -> AuthenticationResult:
 
 
 @router.get("/validate-email")
-def validate_email(token: str | None, request: Request):
+def validate_email(token: str | None, request: Request, session: Session = Depends(get_db)):
     if not token:
         raise HTTPException(status_code=401, message="Token is required")
     payload = verify_jwt(token)
     email = payload.get('user_email', "")
-    user = get_user(email)
+    user = get_user(email, session)
     user.email_verified = True
     session.add(user)
     session.commit()
@@ -200,12 +204,14 @@ async def register(
     mot_de_passe: Annotated[str, Form()],
     photo_profile: Annotated[UploadFile | str, File(
         description="A file read as UploadFile")] = "",
+        session: Session = Depends(get_db)
 ):
     try:
 
         image_created_url = None
-        if not photo_profile.content_type.startswith("image/"):
-            raise HTTPException(status_code=400, detail=f"Le fichier {photo_profile.filename} n'est pas une image")
+        if not isinstance(photo_profile, str) and not photo_profile.content_type.startswith("image/"):
+            raise HTTPException(
+                status_code=400, detail=f"Le fichier {photo_profile.filename} n'est pas une image")
         if photo_profile:
             try:
                 image_created_url = create_image_file(photo_profile)
@@ -238,16 +244,17 @@ async def register(
             "Votre compte a été crée avec succès.", content, to=email)
         email_result = send_email(msg, email,)
 
-        return {"message": "Utilisateur créé avec success.", "email": email_result}
+        return {"message": "Utilisateur créé avec success.", "token": token, "email": email_result}
     except HTTPException as e:
         response.status_code = e.status_code
         return e
 
     except IntegrityError as e:
-        response.status_code = 500
+        response.status_code = 400
         return {"error": "Cet email ou ce numéro de téléphone existe déjà!"}
     except Exception as e:
         response.status_code = 500
+        print("Error", e)
         return {"error": str(e)}
     finally:
         session.rollback()
@@ -264,10 +271,11 @@ async def update_profile(
     # mot_de_passe: Annotated[str, Form()],
     photo_profile: Annotated[UploadFile | str, File(
         description="A file read as UploadFile")] = "",
+        session: Session = Depends(get_db)
 ):
     try:
         token = get_auth_token_in_request(request)
-        user_connected = get_user_from_session(token)
+        user_connected = get_user_from_session(session, token)
         image_created_url = None
         if photo_profile and not isinstance(photo_profile, str):
             try:
@@ -281,6 +289,7 @@ async def update_profile(
 
         # user_connected.mot_de_passe = get_password_hash(mot_de_passe)
         # user_connected.email = email
+        # send_email(user_connected)
 
         user_connected.nom_famille = nom_famille
         user_connected.prenom = prenom
@@ -298,7 +307,7 @@ async def update_profile(
         #     "Votre compte a été crée avec succès.", content, to=email)
         # email_result = send_email(msg, email,)
 
-        return {"message": "Utilisateur modifié avec success.", }
+        return {"message": "Utilisateur modifié avec success.", "status": True}
     except HTTPException as e:
         response.status_code = e.status_code
         return e
@@ -314,8 +323,8 @@ async def update_profile(
 
 
 @router.post("/delete-user")
-def delete_user(email: str):
-    user = get_user(email)
+def delete_user(email: str, session: Session = Depends(get_db)):
+    user = get_user(email, session)
     session.delete(user)
     session.commit()
     return {"success": True}
