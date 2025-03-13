@@ -6,7 +6,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import re
 from datetime import datetime
-from core.lib.session import session
+# from core.lib.session import session
 import jwt
 import random
 import requests
@@ -83,12 +83,12 @@ def validate_phone_number(phone_number):
     raise HTTPException(detail="Numéro de tel invalid", status_code=500)
 
 
-def get_user(email: str):
+def get_user(email: str, session):
     return session.query(Utilisateur).filter(
         Utilisateur.email == email).first()
 
 
-def get_user_from_session(token, key=SECRET_KEY, algorithms: list = [ALGORITHM]):
+def get_user_from_session(session, token, key=SECRET_KEY, algorithms: list = [ALGORITHM]):
     if not token:
         raise Exception("Vous n'êtes pas connecté!")
 
@@ -104,7 +104,7 @@ def get_user_from_session(token, key=SECRET_KEY, algorithms: list = [ALGORITHM])
     if not payload_jwt_decoded:
         raise HTTPException(detail="Token invalide!", status_code=401)
 
-    user = get_user(payload_jwt_decoded["sub"])
+    user = get_user(payload_jwt_decoded["sub"], session)
     if not user:
         raise HTTPException(
             status_code=404, detail="Aucun utilisateeur trouvé !")

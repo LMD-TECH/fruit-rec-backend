@@ -4,9 +4,20 @@
 - [x] Reinitiliser son mot de passe
 - [x] Changer son mot de passe
 - [ ] Ecrire les tests unitaire pour chaque EndPoint.
+  - [x] Tester la création de compte
+  - [x] Valider le compte (email)
+  - [x] Tester la connexion (login)
+  - [x] Tester le changement du mot de passe
+  - [x] Tester la modofication des information de profil
+  - [ ] Tester le mot de passe Oublié
+  - [ ] Tester la création d'activité
 - [x] Mettre à jour ses informations de profile
 - [ ] Créer une activité
-  - [x] Recuperationde 
+  - [x] Recuperation de Images (Upload)
+  - [ ] Interoger le model avec ces Images
+  - [ ] Obtenir les resultats
+  - [ ] Sauvegarder l'activité
+  - [ ] Exposer l'Endpoint
 - [ ] Voir les resultats d'une activité
 - [ ] Voir l'historique de ses activité
   
