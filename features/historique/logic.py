@@ -28,8 +28,7 @@ async def upload_images(files: List[UploadFile] = File(...)):
     file_paths = []
     for file in files:
         if not file.content_type.startswith("image/"):
-            raise HTTPException(status_code=400, detail=f"Le fichier {file.filename} n'est pas une image")
-      
+            continue
         file_path = create_image_file(file)
         file_paths.append(file_path)
 
