@@ -1,5 +1,9 @@
 pipeline {
     agent any
+    environment {
+        DOCKER_IMAGE = 'fruit-rec-backend:1.0'
+        DOCKER_CONTAINER = 'fruit-rec-backend-container'
+    }
 
     stages {
         stage('Checkout') {
@@ -7,19 +11,26 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/LMD-TECH/fruit-rec-backend.git'
             }
         }
-        stage('Build') {
-            steps {
-                echo 'Building... docker image'
-            }
-        }
-        stage('Test') {
+         stage('Test') {
             steps {
                 echo 'Testing... API'
             }
         }
+        stage('Build') {
+            steps {
+                script {
+                    sh 'docker build -t $DOCKER_IMAGE .'
+                    
+                }
+            }
+        }
+       
         stage('Deploy') {
             steps {
-                echo 'Deploying... on vps'
+                script {
+                    sh 'docker run --name $DOCKER_CONTAINER -p 8000:8000 $DOCKER_IMAGE'
+                }
+                
             }
         }
     }
