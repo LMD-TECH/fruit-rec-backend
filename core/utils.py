@@ -95,8 +95,8 @@ def get_user_from_session(session, token, key=SECRET_KEY, algorithms: list = [AL
     payload_jwt_decoded = jwt.decode(
         token, key=key, algorithms=algorithms)
 
-    current_time = datetime.utcnow()
-    expiration_time = datetime.utcfromtimestamp(payload_jwt_decoded["exp"])
+    current_time = datetime.now()
+    expiration_time = datetime.fromtimestamp(payload_jwt_decoded["exp"])
 
     if expiration_time < current_time:
         raise HTTPException(detail="Le token a expiré!", status_code=401)

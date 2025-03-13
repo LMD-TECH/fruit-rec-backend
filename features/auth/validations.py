@@ -43,7 +43,7 @@ class UtilisateurResponse(UtilisateurBase):
     id_utilisateur: int
     date_creation_compte: datetime
 
-    class Config:
+    class ConfigDict:
         orm_mode = True
 
 
