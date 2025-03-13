@@ -9,7 +9,7 @@
   - [x] Tester la connexion (login)
   - [x] Tester le changement du mot de passe
   - [x] Tester la modofication des information de profil
-  - [ ] Tester le mot de passe Oublié
+  - [x] Tester le mot de passe Oublié
   - [ ] Tester la création d'activité
 - [x] Mettre à jour ses informations de profile
 - [ ] Créer une activité
