@@ -40,8 +40,8 @@ def verify_jwt(token, key=SECRET_KEY, algorithms=ALGORITHM):
     return jwt.decode(token, algorithms=algorithms, key=key)
 
 
-def authenticate_user(email: str, mot_de_passe: str):
-    user = get_user(email)
+def authenticate_user(email: str, mot_de_passe: str, session):
+    user = get_user(email, session)
     if not user:
         return False
     if not user.email_verified:

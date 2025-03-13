@@ -1,5 +1,9 @@
 pipeline {
     agent any
+    environment {
+        DOCKER_IMAGE = 'fruit-rec-backend:1.0'
+        DOCKER_CONTAINER = 'fruit-rec-backend-container'
+    }
 
     stages {
         stage('Checkout') {
@@ -7,19 +11,26 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/LMD-TECH/fruit-rec-backend.git'
             }
         }
+         stage('Test') {
+            steps {
+                echo 'Testing... '
+            }
+        }
         stage('Build') {
             steps {
-                echo 'Building...'
+                script {
+                    sh 'docker build -t $DOCKER_IMAGE .'
+                    
+                }
             }
         }
-        stage('Test') {
-            steps {
-                echo 'Testing...'
-            }
-        }
+       
         stage('Deploy') {
             steps {
-                echo 'Deploying...'
+                script {
+                    sh 'docker run --name $DOCKER_CONTAINER -p 8000:8000 $DOCKER_IMAGE'
+                }
+                
             }
         }
     }
@@ -30,7 +41,7 @@ pipeline {
                 subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
                 body: """<p>SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
                          <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
-                to: 'fruit-rec-app@codeangel.pro',
+                to: 'mantsouakaarthur10@gmail.com',
                 mimeType: 'text/html'
             )
         }
@@ -39,7 +50,7 @@ pipeline {
                 subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
                 body: """<p>FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
                          <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
-                to: 'fruit-rec-app@codeangel.pro',
+                to: 'mantsouakaarthur10@gmail.com',
                 mimeType: 'text/html'
             )
         }

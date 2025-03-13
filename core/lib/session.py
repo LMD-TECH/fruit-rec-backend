@@ -1,6 +1,6 @@
 
-from sqlalchemy.orm import Session
+# from sqlalchemy.orm import Session
 
-from core.dbconfig import engine
+# from ..dbconfig import engine
 
-session = Session(engine)
+# session = Session(engine)
