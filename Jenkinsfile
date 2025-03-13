@@ -19,7 +19,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    bat 'docker build -t %DOCKER_IMAGE .'
+                    sh 'docker build -t $DOCKER_IMAGE .'
                     
                 }
             }
@@ -28,7 +28,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    bat 'docker run --name %DOCKER_CONTAINER -p 8000:8000 %DOCKER_IMAGE'
+                    sh 'docker run --name $DOCKER_CONTAINER -p 8000:8000 $DOCKER_IMAGE'
                 }
                 
             }
