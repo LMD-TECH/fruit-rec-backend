@@ -13,7 +13,9 @@ pipeline {
         }
          stage('Test') {
             steps {
-                echo 'Testing... '
+                script {
+                    sh "rm -f db_test.db && pytest -v && rm -f db_test.db"
+                }
             }
         }
         stage('Build') {
