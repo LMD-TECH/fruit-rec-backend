@@ -334,7 +334,6 @@ def delete_user(email: str, session: Session = Depends(get_db)):
 def sendemail(email: str):
     template = env.get_template("./email/test.html")
     content = template.render(link="https://accounts.google.com/")
-    print("CONTET JINJA", content)
     msg = make_message(
         "Votre compte a été crée avec succès.", content, to=email)
     email = send_email(msg, to_addrs=email)
