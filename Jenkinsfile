@@ -3,6 +3,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'fruit-rec-backend:1.0'
         DOCKER_CONTAINER = 'fruit-rec-backend-container'
+    
     }
 
     stages {
@@ -14,7 +15,9 @@ pipeline {
          stage('Test') {
             steps {
                 script {
+                    sh "python -m venv venv && source venv/bin/activate && pip install -r requirements.txt"
                     sh "rm -f db_test.db && pytest -v && rm -f db_test.db"
+
                 }
             }
         }
