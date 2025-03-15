@@ -3,7 +3,6 @@ from features.auth.models import Utilisateur
 from datetime import datetime
 import uuid
 import logging
-# BASE_URL = 'http://'
 
 
 user_mock = {
