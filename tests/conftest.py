@@ -24,8 +24,6 @@ def db_session():
 
     session.close()
 
-    # Base.metadata.drop_all(bind=test_engine)
-
 
 @pytest.fixture
 def client(db_session):
