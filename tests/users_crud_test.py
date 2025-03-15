@@ -38,7 +38,6 @@ def test_register(client, db_session):
     assert result["email"]["is_sent"] == True
     assert len(db_session.query(Utilisateur).all()) == 1
 
-    # Valider son compte à la volee
 
     assert "token" in response.json()
     response_1 = client.get(
