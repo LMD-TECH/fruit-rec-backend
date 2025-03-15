@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DOCKER_IMAGE = 'fruit-rec-backend:1.0'
+        DOCKER_IMAGE = 'fruit-rec-backend'
         DOCKER_USERNAME = 'lumeidatech'
         DOCKER_CONTAINER = 'fruit-rec-backend-container'
         SSH_CREDENTIALS = credentials('vps-ssh-key')
@@ -43,10 +43,10 @@ pipeline {
                     sh "docker login -u ${DOCKER_CREDENTIALS_USR} -p ${DOCKER_CREDENTIALS_PSW}"
 
                     // Étape 2 : Tag de l'image Docker avec le nom d'utilisateur Docker Hub
-                    sh 'docker tag $DOCKER_IMAGE $DOCKER_USERNAME/fruit-rec-backend:1.0'
+                    sh 'docker tag $DOCKER_IMAGE $DOCKER_USERNAME/fruit-rec-api:1.0'
 
                     // Étape 3 : Push de l'image Docker vers Docker Hub
-                    sh 'docker push $DOCKER_USERNAME/fruit-rec-backend:1.0'
+                    sh 'docker push $DOCKER_USERNAME/fruit-rec-api:1.0'
 
                     // Étape 4 : Déploiement sur le serveur distant via SSH
                     sh '''
