@@ -27,7 +27,7 @@
 - [x] Update profile
 - [x] Change password
 - [x] Reset password
-- [ ] Create an activity
+- [x ] Create an activity
 - [ ] Voir les results d'une activity
 - [ ] Voir l'historique des ses activté
   
