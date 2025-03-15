@@ -3,6 +3,8 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'fruit-rec-backend:1.0'
         DOCKER_CONTAINER = 'fruit-rec-backend-container'
+        SSH_CREDENTIALS = credentials('vps-ssh-key')
+        DOCKER_CREDENTIALS = credentials('docker-hub-credentials-id')
     }
 
     stages {
@@ -36,7 +38,20 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh 'docker run --name $DOCKER_CONTAINER -p 8000:8000 $DOCKER_IMAGE'
+                    // Push Docker Image to Docker Hub
+                    sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+                    sh 'docker tag $DOCKER_IMAGE $DOCKER_USERNAME/fruit-rec-backend:1.0'
+                    sh 'docker push $DOCKER_USERNAME/fruit-rec-backend:1.0'
+
+                    // SSH into VPS, pull the image, and run the container
+                    sh '''
+                ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH user@62.161.252.140 << 'EOF'
+                    docker pull $DOCKER_USERNAME/fruit-rec-backend:1.0
+                    docker stop $DOCKER_CONTAINER || true
+                    docker rm $DOCKER_CONTAINER || true
+                    docker run --name $DOCKER_CONTAINER -p 8000:8000 $DOCKER_USERNAME/fruit-rec-backend:1.0
+                EOF
+            '''
                 }
             }
         }
