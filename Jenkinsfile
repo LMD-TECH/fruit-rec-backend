@@ -15,9 +15,8 @@ pipeline {
          stage('Test') {
             steps {
                 script {
-                    sh "python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt"
+                    sh "python3 -m venv venv && source venv/bin/activate && pip3 install -r requirements.txt"
                     sh "rm -f db_test.db && pytest -v && rm -f db_test.db"
-
                 }
             }
         }
@@ -25,7 +24,6 @@ pipeline {
             steps {
                 script {
                     sh 'docker build -t $DOCKER_IMAGE .'
-                    
                 }
             }
         }
