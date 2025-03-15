@@ -2,6 +2,7 @@ pipeline {
     agent any
     environment {
         DOCKER_IMAGE = 'fruit-rec-backend:1.0'
+        DOCKER_USERNAME = 'lumeidatech'
         DOCKER_CONTAINER = 'fruit-rec-backend-container'
         SSH_CREDENTIALS = credentials('vps-ssh-key')
         DOCKER_CREDENTIALS = credentials('docker-hub-credentials-id')
