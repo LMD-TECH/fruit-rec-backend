@@ -26,6 +26,4 @@ class Utilisateur(Base):
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # historiques = relationship("Historique", back_populates="utilisateur")
-
-
 # user = Utilisateur().activites
