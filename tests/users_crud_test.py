@@ -109,7 +109,7 @@ def test_forgot_password(client, db_session):
 def test_reset_password(client, db_session):
 
     response = client.post(
-        f"/api/auth/reset-password/{DATA_STORED["reset_password_token"]}",
+        f"/api/auth/reset-password/{DATA_STORED['reset_password_token']}",
         json={"new_password": new_user_mock["mot_de_passe"]},
     )
 
