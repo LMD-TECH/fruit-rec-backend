@@ -2,7 +2,7 @@
 from features.auth.models import Utilisateur
 from datetime import datetime
 import uuid
-
+import os
 # BASE_URL = 'http://'
 
 
@@ -30,6 +30,7 @@ DATA_STORED = {
 def test_register(client, db_session):
     assert len(db_session.query(Utilisateur).all()) == 0
     response = client.post("/api/auth/register", data=user_mock)
+    os.system('echo f"{response}" ')
     assert response.status_code == 200
     result = response.json()
     assert "email" in result
