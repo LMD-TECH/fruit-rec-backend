@@ -15,10 +15,9 @@ pipeline {
          stage('Test') {
             steps {
                 script {
-                    sh '''
-                        #!/bin/bash 
+                    sh ''' 
                         python3 -m venv venv
-                        source venv/bin/activate
+                        . venv/bin/activate
                         pip install -r requirements.txt
                         rm -f db_test.db 
                         pytest -v 
