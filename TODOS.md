@@ -28,7 +28,7 @@
 - [x] Change password
 - [x] Reset password
 - [x ] Create an activity
-- [ ] Voir les results d'une activity
+- [X] Voir les results d'une activity
 - [ ] Voir l'historique des ses activté
   
 ## Notes
