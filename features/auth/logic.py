@@ -2,7 +2,6 @@
 from datetime import datetime
 from fastapi import APIRouter, Response, Request, Depends, HTTPException, status, File, UploadFile, Form, Cookie
 from fastapi.security import OAuth2PasswordBearer
-# from core.lib.session import session
 from pydantic import EmailStr
 from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
