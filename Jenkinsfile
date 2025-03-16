@@ -80,8 +80,6 @@ pipeline {
 
                     // Déploiement local sur le VPS
                     sh """
-                        # Télécharge l'image depuis Docker Hub (optionnel si déjà présente)
-                        docker pull $DOCKER_USERNAME/fruit-rec-api:${IMAGE_VERSION}
                         # Arrête le conteneur existant s'il existe
                         docker stop $DOCKER_CONTAINER || true
                         # Supprime le conteneur existant
