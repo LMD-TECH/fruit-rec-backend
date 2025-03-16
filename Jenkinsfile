@@ -4,8 +4,8 @@ pipeline {
         DOCKER_IMAGE = 'fruit-rec-backend'
         DOCKER_USERNAME = 'lumeidatech'
         DOCKER_CONTAINER = 'fruit-rec-backend-container'
-        SSH_CREDENTIALS = credentials('vps-ssh-key') // Clé SSH stockée dans Jenkins
-        DOCKER_CREDENTIALS = credentials('docker-hub-credentials-id') // Identifiants Docker Hub stockés dans Jenkins
+        SSH_CREDENTIALS = credentials('vps-ssh-key') // SSH key stored in Jenkins
+        DOCKER_CREDENTIALS = credentials('docker-hub-credentials-id') // Docker Hub credentials stored in Jenkins
     }
 
     stages {
@@ -41,33 +41,30 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Étape 1 : Connexion à Docker Hub en utilisant les identifiants stockés dans Jenkins
+                    // Step 1: Log in to Docker Hub using stored credentials
                     sh """
                         docker login -u ${DOCKER_CREDENTIALS_USR} -p ${DOCKER_CREDENTIALS_PSW}
                         echo 'Docker login successful'
                     """
 
-                    // Étape 2 : Tag de l'image Docker avec le nom d'utilisateur Docker Hub
+                    // Step 2: Tag the Docker image
                     sh 'docker tag $DOCKER_IMAGE $DOCKER_USERNAME/fruit-rec-backend:1.0'
 
-                    // Étape 3 : Push de l'image Docker vers Docker Hub
+                    // Step 3: Push the Docker image to Docker Hub
                     sh 'docker push $DOCKER_USERNAME/fruit-rec-backend:1.0'
 
-                    // Étape 4 : Déploiement sur le serveur distant via SSH
+                    // Step 4: Deploy to the remote server via SSH
                     sh """
-                        cat ${SSH_CREDENTIALS}
-
-                        // Connexion SSH au serveur distant et déploiement
                         ssh -o StrictHostKeyChecking=no -i ${SSH_CREDENTIALS} user@62.161.252.140 << 'EOF'
-                            // Télécharger la dernière version de l'image Docker
+                            # Pull the latest Docker image
                             docker pull $DOCKER_USERNAME/fruit-rec-backend:1.0
 
-                            // Arrêter et supprimer le conteneur existant s'il est en cours d'exécution
+                            # Stop and remove the existing container if it’s running
                             docker stop $DOCKER_CONTAINER || true
                             docker rm $DOCKER_CONTAINER || true
 
-                            // Lancer un nouveau conteneur avec la dernière image
-                            docker run --name $DOCKER_CONTAINER -p 8000:8000 $DOCKER_USERNAME/fruit-rec-backend:1.0
+                            # Run a new container with the latest image
+                            docker run -d --name $DOCKER_CONTAINER -p 8000:8000 $DOCKER_USERNAME/fruit-rec-backend:1.0
                         EOF
                     """
                 }
