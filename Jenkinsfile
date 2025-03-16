@@ -68,7 +68,7 @@ pipeline {
                     // Deploy to the remote server with the dynamic version
                     sh """
 
-                        ssh -v -o StrictHostKeyChecking=no -i ${SSH_CREDENTIALS} user@62.161.252.140 << 'EOF'
+                        ssh -v -o StrictHostKeyChecking=no -i ${SSH_CREDENTIALS} ubuntu@62.161.252.140 << 'EOF'
                             docker pull $DOCKER_USERNAME/fruit-rec-api:${IMAGE_VERSION}
                             docker stop $DOCKER_CONTAINER || true
                             docker rm $DOCKER_CONTAINER || true
