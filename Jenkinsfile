@@ -39,8 +39,9 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
+                    sh "echo ${DOCKER_CREDENTIALS_USR} and '${DOCKER_CREDENTIALS_PSW}' "
                     // Étape 1 : Connexion à Docker Hub en utilisant les identifiants stockés dans Jenkins
-                    sh "docker login -u ${DOCKER_CREDENTIALS_USR} -p '${DOCKER_CREDENTIALS_PSW}' "
+                    sh "docker login -u ${DOCKER_CREDENTIALS_USR} -p '${DOCKER_CREDENTIALS_PSW}'"
 
                     // Étape 2 : Tag de l'image Docker avec le nom d'utilisateur Docker Hub
                     sh 'docker tag $DOCKER_IMAGE $DOCKER_USERNAME/fruit-rec-api:1.0'
