@@ -1,6 +1,6 @@
 // Déclaration du pipeline Jenkins
 pipeline {
-    // Exécute le pipeline sur n'importe quel agent (local sur le VPS dans ce cas)
+    // Exécute le pipeline sur n'importe quel agent (local sur le VPS)
     agent any
 
     // Variables d'environnement globales
@@ -8,7 +8,7 @@ pipeline {
         DOCKER_IMAGE = 'fruit-rec-api'  // Nom de l'image Docker à construire
         DOCKER_USERNAME = 'lumeidatech'  // Nom d'utilisateur Docker Hub
         DOCKER_CONTAINER = 'fruit-rec-api-container'  // Nom du conteneur déployé sur le VPS
-        DOCKER_CREDENTIALS = credentials('docker-hub-credentials-id')  // Identifiants Docker Hub stockés dans Jenkins
+        DOCKER_CREDENTIALS = credentials('docker-hub-credentials-id')  // Identifiants Docker Hub
         IMAGE_VERSION = "1.${BUILD_NUMBER}"  // Version dynamique basée sur le numéro de build Jenkins
     }
 
@@ -92,31 +92,34 @@ pipeline {
                 }
             }
         }
-    }
 
-    // Actions post-exécution
-    post {
-        // En cas de succès
-        success {
-            emailext(
-                subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: """<p>SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
-                         <p>Deployed image: $DOCKER_USERNAME/fruit-rec-api:${IMAGE_VERSION}</p>
-                         <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
-                to: 'lumeida.tech0@gmail.com',
-                mimeType: 'text/html'
-            )
-        }
-
-        // En cas d'échec
-        failure {
-            emailext(
-                subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: """<p>FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
-                         <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
-                to: 'lumeida.tech0@gmail.com',
-                mimeType: 'text/html'
-            )
+        // Étape 5 : Notification par email
+        stage('Notify') {
+            steps {
+                script {
+                    // Vérifie le statut du pipeline pour envoyer l'email approprié
+                    if (currentBuild.currentResult == 'SUCCESS') {
+                        // Email en cas de succès
+                        emailext(
+                            subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                            body: """<p>SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+                                     <p>Deployed image: $DOCKER_USERNAME/fruit-rec-api:${IMAGE_VERSION}</p>
+                                     <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
+                            to: 'lumeida.tech0@gmail.com',
+                            mimeType: 'text/html'
+                        )
+                    } else {
+                        // Email en cas d'échec
+                        emailext(
+                            subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                            body: """<p>FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+                                     <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
+                            to: 'lumeida.tech0@gmail.com',
+                            mimeType: 'text/html'
+                        )
+                    }
+                }
+            }
         }
     }
 }
