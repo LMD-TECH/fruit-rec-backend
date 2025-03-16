@@ -2,7 +2,6 @@ FROM python:3.12-slim
 
 # Set working directory
 WORKDIR /app 
-#ENV  ALGORITHM="HS256"
 
 # Install dependencies
 COPY requirements.txt /app/
