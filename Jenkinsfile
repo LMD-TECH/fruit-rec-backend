@@ -42,6 +42,13 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
+                    sh """
+                        # Debug: Inspect the key file Jenkins provides
+                        echo "SSH key file: ${SSH_CREDENTIALS}"
+                        ls -l ${SSH_CREDENTIALS}
+                        head -n 5 ${SSH_CREDENTIALS}
+                        ssh-keygen -l -f ${SSH_CREDENTIALS}  # Show fingerprint
+                    """
                     // Log in to Docker Hub
                     sh """
                         docker login -u ${DOCKER_CREDENTIALS_USR} -p ${DOCKER_CREDENTIALS_PSW}
@@ -60,7 +67,8 @@ pipeline {
 
                     // Deploy to the remote server with the dynamic version
                     sh """
-                        ssh -o StrictHostKeyChecking=no -i ${SSH_CREDENTIALS} user@62.161.252.140 << 'EOF'
+
+                        ssh -v -o StrictHostKeyChecking=no -i ${SSH_CREDENTIALS} user@62.161.252.140 << 'EOF'
                             docker pull $DOCKER_USERNAME/fruit-rec-api:${IMAGE_VERSION}
                             docker stop $DOCKER_CONTAINER || true
                             docker rm $DOCKER_CONTAINER || true
