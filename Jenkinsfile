@@ -55,8 +55,7 @@ pipeline {
 
                     // Étape 4 : Déploiement sur le serveur distant via SSH
                     sh """
-                        // Définir les permissions de la clé SSH
-                        chmod 600 ${SSH_CREDENTIALS}
+                        cat ${SSH_CREDENTIALS}
 
                         // Connexion SSH au serveur distant et déploiement
                         ssh -o StrictHostKeyChecking=no -i ${SSH_CREDENTIALS} user@62.161.252.140 << 'EOF'
