@@ -14,7 +14,7 @@
 - [x] Mettre à jour ses informations de profile
 - [ ] Créer une activité
   - [x] Recuperation de Images (Upload)
-  - [ ] Interoger le model avec ces Images
+  - [X] Interoger le model avec ces Images
   - [ ] Obtenir les resultats
   - [ ] Sauvegarder l'activité
   - [ ] Exposer l'Endpoint
