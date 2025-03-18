@@ -8,7 +8,7 @@ import logging
 user_mock = {
     "nom_famille": "Dupont",
     "prenom": "Jean",
-    "email": "lumeida.tech@gmail",
+    "email": "lumeida.tech@gmail.com",
     "numero_telephone": "22177777777",
     "mot_de_passe": "test",
 }
