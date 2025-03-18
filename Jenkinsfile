@@ -39,7 +39,7 @@ pipeline {
                         # Lance les tests avec Pytest en mode verbeux
                         pytest -v
                         # Nettoie la base de données de test
-                        rm -f db_test.db
+                        # rm -f db_test.db
                     '''
                 }
             }
