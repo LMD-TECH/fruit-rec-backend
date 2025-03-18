@@ -46,7 +46,7 @@ os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 
 @router.get("/users")
-def get_all_users(session: Session = Depends(get_db)) -> list[UtilisateurBase]:
+def get_all_users(session: Session = Depends(get_db)):
     print("HelloString")
     return session.query(Utilisateur).all()
 
@@ -146,7 +146,7 @@ async def update_password(request: Request, response: Response, data: Utilisateu
     try:
         token = get_auth_token_in_request(request)
 
-        user = get_user_from_session(session, token)
+        user: Utilisateur = get_user_from_session(session, token)
 
         if not verify_password(data.mot_de_passe_actuel, user.mot_de_passe):
             raise Exception(

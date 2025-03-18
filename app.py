@@ -38,9 +38,9 @@ app.include_router(auth_router)
 app.include_router(activities_router)
 
 
-# @app.on_event("startup")
-# def startup():
-#     create_tables()
+@app.on_event("startup")
+def startup():
+    create_tables()
 
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name=STATIC_DIR)

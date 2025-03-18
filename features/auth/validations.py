@@ -10,6 +10,7 @@ class UtilisateurBase(BaseModel):
     email: EmailStr
     numero_telephone: str
     email_verified: bool
+    # activities: list
 
 
 class UtilisateurCreate(UtilisateurBase):

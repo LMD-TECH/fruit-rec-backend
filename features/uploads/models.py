@@ -7,8 +7,8 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 
 
-class Image(Base):
-    __tablename__ = "image"
+# class Image(Base):
+#     __tablename__ = "image"
 
-    id_image = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    image_path = Column(String, nullable=False)
+#     id_image = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+#     image_path = Column(String, nullable=False)
