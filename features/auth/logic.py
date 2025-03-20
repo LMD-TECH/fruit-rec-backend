@@ -2,7 +2,6 @@
 from datetime import datetime
 from fastapi import APIRouter, Response, Request, Depends, HTTPException, status, File, UploadFile, Form, Cookie
 from fastapi.security import OAuth2PasswordBearer
-# from core.lib.session import session
 from pydantic import EmailStr
 from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
@@ -335,7 +334,6 @@ def delete_user(email: str, session: Session = Depends(get_db)):
 def sendemail(email: str):
     template = env.get_template("./email/test.html")
     content = template.render(link="https://accounts.google.com/")
-    print("CONTET JINJA", content)
     msg = make_message(
         "Votre compte a été crée avec succès.", content, to=email)
     email = send_email(msg, to_addrs=email)
