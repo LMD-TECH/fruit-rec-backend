@@ -41,3 +41,4 @@
 - [ ] L'upload de fichier ne prend pas plus d'un certain nombre de fichier (> 5)
 - [ ] Au premier lancement de l'app, il arrive pas creer les tables
 - [ ] Quand on se connecte (la redirect sur le dashbord est pas immediate au niveau du front)
+- [ ] Apres l'upload sur create_activity sur Front
