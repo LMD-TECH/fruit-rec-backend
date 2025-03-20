@@ -112,7 +112,11 @@ def get_user_from_session(session, token, key=SECRET_KEY, algorithms: list = [AL
 
 
 def get_auth_token_in_request(request: Request):
-    bearer, token = request._headers["authorization"].split(" ")
+    try:
+        bearer, token = request._headers["authorization"].split(" ")
+    except KeyError:
+        raise HTTPException(
+            details="Vous êtes pas connecté !", status_code=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
     if not bearer != "Bearer " or not token:
         raise HTTPException(
             details="Invalid bearer", status_code=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)

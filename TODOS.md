@@ -14,10 +14,10 @@
 - [x] Mettre à jour ses informations de profile
 - [ ] Créer une activité
   - [x] Recuperation de Images (Upload)
-  - [ ] Interoger le model avec ces Images
   - [x] Obtenir les resultats
   - [x] Sauvegarder l'activité
   - [x] Exposer l'Endpoint
+  - [ ] Interoger le model avec ces Images
 - [x] Voir les resultats d'une activité
 - [x] Voir l'historique de ses activité
   
@@ -37,3 +37,5 @@
 - [x] deconn apres le update password
 - [x] Finir avec les config mail sending (Recours à des srtvices tiers)
 - [x] Revoir le Flow de création de compte (Validation de compte pour eviter les spams)
+- [ ] Retravailler les messages d'error (Register tel inval : register, compte non validé: login...)
+- [ ] L'upload de fichier ne prend pas plus d'un certain nombre de fichier (> 5)
