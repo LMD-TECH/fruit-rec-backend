@@ -209,11 +209,12 @@ async def register(
     try:
 
         image_created_url = None
-        if not isinstance(photo_profile, str) and not photo_profile.content_type.startswith("image/"):
-            raise HTTPException(
-                status_code=400, detail=f"Le fichier {photo_profile.filename} n'est pas une image")
+
         if photo_profile:
             try:
+                if not isinstance(photo_profile, str) and not photo_profile.content_type.startswith("image/"):
+                    raise HTTPException(
+                        status_code=400, detail=f"Le fichier {photo_profile.filename} n'est pas une image")
                 image_created_url = create_image_file(photo_profile)
             except Exception as e:
                 pass

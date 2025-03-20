@@ -5,10 +5,12 @@ from fastapi import APIRouter, Response, Request, Depends, HTTPException, File, 
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session, joinedload
 from datetime import datetime
+import urllib.parse
 import uuid
 from typing import List
-
-from features.historique.models import Historique, Image
+from urllib.parse import urljoin
+from features.historique.models import Historique
+from features.uploads.models import Image
 from core.dbconfig import get_db
 from core.utils import get_auth_token_in_request, get_user_from_session
 from features.auth.models import Utilisateur
@@ -39,7 +41,7 @@ def format_result(results: List[dict]) -> List[str]:
     formatted_fruits = [f"{qty} {fruit}" for fruit,
                         qty in fruit_counts.items()]
 
-    return " et ".join(formatted_fruits) + "."
+    return ", ".join(formatted_fruits) + "."
 
 
 def get_dict_result(results):
@@ -60,8 +62,8 @@ def encode_image_results(images: list[Image]):
         info_dict = {}
         info_dict["img_id"] = str(item.id_image)
         info_dict["image_url"] = str(item.image_path)
-        results_data = get_dict_result(results)
-        info_dict["results"] = results_data
+        fruits = get_dict_result(results)
+        info_dict["fruits"] = fruits
         result_dict.append(info_dict)
     return result_dict
 
@@ -74,9 +76,9 @@ async def upload_images(
     session: Session = Depends(get_db)
 ):
 
-    # token = get_auth_token_in_request(request)
+    token = get_auth_token_in_request(request)
 
-    # user: Utilisateur = get_user_from_session(session, token)
+    user: Utilisateur = get_user_from_session(session, token)
 
     if not files:
         raise HTTPException(status_code=400, detail="Aucun fichier téléversé")
@@ -92,23 +94,35 @@ async def upload_images(
 
     images = []
     for path in file_paths:
-        result = "5,bananes mûres;3,pommes vertes"  # Call api ici
+        # les fruits sont separé par des ; [puis les infos(la quantité et le nom) sur chaque fruit sont separé par des , simples]
+
+        fruits = [
+            {
+                "quantity": 1,
+                "name": "Banane"
+            },
+            {
+                "quantity": 1,
+                "name": "Pomme"
+            },
+        ]
+        result = "5,bananes mûres;3,pommes vertes;6,autres fruits"  # Call api ici
         image = Image(image_path=path, id_image=uuid.uuid4(), resultat=result)
         images.append(image)
 
     result_dict = encode_image_results(images)
 
-    description = "\n".join([format_result(result["results"])
-                             for result in result_dict])
+    description = "\n\n".join([format_result(result["fruits"])
+                               for result in result_dict])
 
     activity_data = {
         "nbre_total_img": len(file_paths),
         "description": description,
         "images": images,
-        "id_utilisateur": uuid.UUID("01120004-b07f-4c31-8de1-4dbe326c9654"),
+        "id_utilisateur": user.id_utilisateur,
     }
 
-    new_activity = Historique(**activity_data)
+    new_activity: Historique = Historique(**activity_data)
 
     try:
         session.add(new_activity)
@@ -123,27 +137,62 @@ async def upload_images(
             status_code=500
         )
 
+    results = []
+    for r in result_dict:
+        new_result = r.copy()
+        new_result["image_url"] = urljoin(
+            str(request.base_url), r["image_url"])
+        results.append(new_result)
+
     return JSONResponse(
         content={
             "message": "Images téléversées avec succès",
             "global_result": activity_data["description"],
-            "result_data": result_dict,
-            "images": [image.image_path for image in new_activity.images]
+            "result_data": results,
+            "images": [urljoin(str(request.base_url), image.image_path) for image in new_activity.images]
         },
         status_code=201
     )
 
 
 @router.get("/activities")
-def get_all_historiques(session: Session = Depends(get_db)):
+def get_all_historiques(request: Request, response: Response, session: Session = Depends(get_db)):
+
+    token = get_auth_token_in_request(request)
+    user: Utilisateur = get_user_from_session(session, token)
+
     historiques = (
         session.query(Historique)
         .options(joinedload(Historique.images))
-        .all()
+        .filter(Historique.id_utilisateur == user.id_utilisateur)
     )
+
     histories = []
     for hist in historiques:
         data = hist.__dict__
-        data["images"] = encode_image_results(hist.images)
+        images = encode_image_results(hist.images)
+        new_images = []
+        for image in images:
+            img = image.copy()
+            img["image_url"] = urljoin(
+                str(request.base_url), image["image_url"])
+            new_images.append(img)
+        data["images"] = new_images
         histories.append(data)
-    return histories
+
+    total_images = 0
+    for hist in historiques:
+        total_images += len(hist.images)
+
+    total_fruits = 0
+    for history in histories:
+        for image in history["images"]:
+            total_fruits += len(image["fruits"])
+
+    stats = {
+        "total_images": total_images,
+        "total_fruits": total_fruits,
+        "moyenne_fruits_images": round(total_fruits/total_images, 2)
+    }
+
+    return {"histories": histories, "stats": stats}
