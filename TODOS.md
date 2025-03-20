@@ -11,6 +11,7 @@
   - [x] Tester la modofication des information de profil
   - [x] Tester le mot de passe Oublié
   - [ ] Tester la création d'activité
+  - [ ] Tester la recuperation des activités (avec les stats)
 - [x] Mettre à jour ses informations de profile
 - [ ] Créer une activité
   - [x] Recuperation de Images (Upload)
@@ -38,7 +39,8 @@
 - [x] Finir avec les config mail sending (Recours à des srtvices tiers)
 - [x] Revoir le Flow de création de compte (Validation de compte pour eviter les spams)
 - [ ] Retravailler les messages d'error (Register tel inval : register, compte non validé: login...)
-- [ ] L'upload de fichier ne prend pas plus d'un certain nombre de fichier (> 5)
+- [x] L'upload de fichier ne prend pas plus d'un certain nombre de fichier (> 5)
 - [ ] Au premier lancement de l'app, il arrive pas creer les tables
 - [ ] Quand on se connecte (la redirect sur le dashbord est pas immediate au niveau du front)
 - [ ] Apres l'upload sur create_activity sur Front
+- [x] Lier le loader sur le dashboard à celle de la req au niveau front.
