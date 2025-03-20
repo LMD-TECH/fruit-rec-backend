@@ -37,10 +37,12 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(activities_router)
 
+# TODO: revoir la methode de demarrage de l'app -> le deco
 
-# @app.on_event("startup")
-# def startup():
-#     create_tables()
+
+@app.on_event("startup")
+def startup():
+    create_tables()
 
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name=STATIC_DIR)

@@ -21,9 +21,11 @@ class Utilisateur(Base):
     mot_de_passe = Column(String, nullable=False)
     code_otp = Column(String, nullable=True)
     code_otp_expiration = Column(DateTime, nullable=True)
-    date_creation_compte = Column(DateTime, default=datetime.utcnow)
+    date_creation_compte = Column(DateTime, default=datetime.now)
     date_mise_a_jour = Column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+        DateTime, default=datetime.now, onupdate=datetime.now)
 
-    # historiques = relationship("Historique", back_populates="utilisateur")
+    # activities = relationship("Historique", back_populates="utilisateur")
+
+
 # user = Utilisateur().activites
