@@ -15,11 +15,11 @@
 - [ ] Créer une activité
   - [x] Recuperation de Images (Upload)
   - [ ] Interoger le model avec ces Images
-  - [ ] Obtenir les resultats
-  - [ ] Sauvegarder l'activité
-  - [ ] Exposer l'Endpoint
-- [ ] Voir les resultats d'une activité
-- [ ] Voir l'historique de ses activité
+  - [x] Obtenir les resultats
+  - [x] Sauvegarder l'activité
+  - [x] Exposer l'Endpoint
+- [x] Voir les resultats d'une activité
+- [x] Voir l'historique de ses activité
   
 # Frontend
 - [x] Login  ok
@@ -29,7 +29,7 @@
 - [x] Reset password
 - [x ] Create an activity
 - [X] Voir les results d'une activity
-- [ ] Voir l'historique des ses activté
+- [x] Voir l'historique des ses activté
   
 ## Notes
 - [x] Gérer les tokens autrement (Bearer Authentication)
