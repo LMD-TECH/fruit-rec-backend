@@ -33,3 +33,14 @@ def client(db_session):
     app.dependency_overrides[get_db] = override_get_db
 
     return TestClient(app)
+
+
+# A revoir
+def pytest_collection_modifyitems(items):
+    """test items come to last"""
+    run_last = ["tests.test_register", "tests.test_c", "tests.test_a"]
+    modules = {item: item.module.__name__ for item in items}
+    items[:] = sorted(
+        items, key=lambda x: run_last.index(
+            modules[x]) if modules[x] in run_last else -1
+    )

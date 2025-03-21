@@ -2,6 +2,7 @@ import bcrypt
 
 from datetime import datetime
 from core.utils import get_user
+from fastapi import HTTPException
 from .models import Utilisateur
 from datetime import datetime, timezone, timedelta
 import os
@@ -42,11 +43,14 @@ def verify_jwt(token, key=SECRET_KEY, algorithms=ALGORITHM):
 
 
 def authenticate_user(email: str, mot_de_passe: str, session):
-    user = get_user(email, session)
+    user: Utilisateur = get_user(email, session)
+    print("User Found", user.email_verified)
     if not user:
         return False
     if not user.email_verified:
-        return False
+        # return False
+        raise HTTPException(
+            detail=f"Cliquez sur le lien envoyé sur {user.email} pour valider d'abord votre compte.", status_code=403)
 
     mot_de_passe_correspond = verify_password(mot_de_passe, user.mot_de_passe)
     if not mot_de_passe_correspond:

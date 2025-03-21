@@ -82,7 +82,6 @@ def validate_phone_number(phone_number):
         return phone_number
     raise HTTPException(detail="Numéro de tel invalid", status_code=500)
 
-
 def get_user(email: str, session):
     return session.query(Utilisateur).filter(
         Utilisateur.email == email).first()
@@ -90,7 +89,8 @@ def get_user(email: str, session):
 
 def get_user_from_session(session, token, key=SECRET_KEY, algorithms: list = [ALGORITHM]):
     if not token:
-        raise Exception("Vous n'êtes pas connecté!")
+        raise HTTPException(
+            detail="Vous n'êtes pas connecté!", status_code=401)
 
     payload_jwt_decoded = jwt.decode(
         token, key=key, algorithms=algorithms)

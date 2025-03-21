@@ -70,6 +70,10 @@ async def login(data: UtilisateurLogin, response: Response, session: Session = D
         #                     expires=3600, max_age=access_token_expires, path="/", samesite="lax")
 
         return {'status': True, "message": "Utilsateur connecté avec success.", "token": access_token}
+
+    except HTTPException as e:
+        response.status_code = e.status_code
+        return {"message": e.detail, "status": e.status_code}
     except Exception as e:
         print("ErrorLogin", e)
         response.status_code = 500
@@ -158,7 +162,8 @@ async def update_password(request: Request, response: Response, data: Utilisateu
 
         return {'status': True, "user": user}
     except Exception as e:
-        print(e)
+        print("RequestHeaders", request._headers)
+        print("ErrorTest", e)
         response.status_code = 500
         return {'status': False, "error": str(e)}
 
@@ -258,6 +263,33 @@ async def register(
         return {"error": str(e)}
     finally:
         session.rollback()
+
+
+@router.post("/send-validation-email/")
+def send_email_for_validate_account(
+    response: Response,
+    requests: Request,
+    email: EmailStr,
+    session: Session = Depends(get_db)
+):
+    user = None
+    try:
+        user = get_user(email, session)
+    except:
+        response.status_code = 404
+        return {"message": "Utilisateur non trouvé..."}
+    access_token_expires = timedelta(hours=24)
+    token = create_access_token(
+        data={"user_email": email}, expires_delta=access_token_expires)
+
+    link = os.getenv('APP_URL', "") + "/auth/validate-account?token="+token
+    template = env.get_template("./email/register_message.html")
+    content = template.render(link=link, prenom=user.prenom)
+
+    msg = make_message(
+        "Votre compte a été crée avec succès.", content, to=email)
+    email_result = send_email(msg, email,)
+    return {"email": email_result, }
 
 
 @router.post("/update-profile/")
