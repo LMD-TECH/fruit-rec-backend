@@ -80,6 +80,7 @@ async def upload_images(
 
     user: Utilisateur = get_user_from_session(session, token)
 
+    print("OwerFiles", files)
     if not files:
         raise HTTPException(status_code=400, detail="Aucun fichier téléversé")
 
@@ -189,10 +190,15 @@ def get_all_historiques(request: Request, response: Response, session: Session =
         for image in history["images"]:
             total_fruits += len(image["fruits"])
 
+    try:
+        moyenne_fruits_images = round(total_fruits/total_images, 2)
+    except:
+        moyenne_fruits_images = 0
+
     stats = {
         "total_images": total_images,
         "total_fruits": total_fruits,
-        "moyenne_fruits_images": round(total_fruits/total_images, 2)
+        "moyenne_fruits_images": moyenne_fruits_images,
     }
 
     return {"histories": histories, "stats": stats}

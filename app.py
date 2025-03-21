@@ -1,5 +1,3 @@
-
-
 import logging
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
@@ -9,6 +7,7 @@ from features.auth.logic import router as auth_router
 from fastapi.middleware.cors import CORSMiddleware
 from features.historique.logic import router as activities_router
 from dotenv import load_dotenv
+from contextlib import asynccontextmanager
 import os
 
 load_dotenv()
@@ -19,12 +18,22 @@ STATIC_DIR = os.getenv('STATIC_DIR')
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="API Fruit Rec")
+# app = FastAPI(title="API Fruit Rec")
 
 origins = [
     "http://localhost:3000",
+    "http://localhost:3001",
     "http://127.0.0.1:3000",
 ]
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_tables()
+    yield
+
+
+app = FastAPI(title="API Fruit Rec", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -40,9 +49,9 @@ app.include_router(activities_router)
 # TODO: revoir la methode de demarrage de l'app -> le deco
 
 
-@app.on_event("startup")
-def startup():
-    create_tables()
+# @app.on_event("startup")
+# def startup():
+#     create_tables()
 
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name=STATIC_DIR)
