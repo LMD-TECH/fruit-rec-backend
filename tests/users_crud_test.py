@@ -115,6 +115,7 @@ def test_create_activity(client, db_session):
     assert response.status_code == 201
     assert "result_data" in result_creating
     assert "global_result" in result_creating
+    assert result_creating["global_result"] == "aucun fruit détecté."
     assert "images" in result_creating
 
 

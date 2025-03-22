@@ -8,7 +8,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import re
 from datetime import datetime
-# from core.lib.session import session
+from google import genai
 import jwt
 import random
 import requests
@@ -19,6 +19,7 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY", "")
 ALGORITHM = os.getenv("ALGORITHM", "")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 10))
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', "")
 
 
 def make_message(subject: str, content: str, to: str,) -> MIMEMultipart:
@@ -84,6 +85,7 @@ def validate_phone_number(phone_number):
         return phone_number
     raise HTTPException(detail="Numéro de tel invalid", status_code=500)
 
+
 def get_user(email: str, session):
     return session.query(Utilisateur).filter(
         Utilisateur.email == email).first()
@@ -124,7 +126,19 @@ def get_auth_token_in_request(request: Request):
             details="Invalid bearer", status_code=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
     return token
 
+def chat_with_gemini(contents: list = []) -> str:
+    result = ""
+    try:
+        client = genai.Client(
+            api_key=GEMINI_API_KEY)
+        response = client.models.generate_content(
+            model="gemini-2.0-flash-exp", contents=contents)
+        result = response.text
 
+    except Exception as e:
+        result = "aucun,fruit,détecté;"
+    return result
+  
 # Security setup
 security = HTTPBasic()
 VALID_USERNAME = "admin"
@@ -138,3 +152,4 @@ def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)):
             headers={"WWW-Authenticate": "Basic"},
         )
     return True
+
