@@ -131,12 +131,6 @@ pipeline {
                     mimeType: 'text/html',
                     from: 'mallemoussa091@gmail.com',  // Adresse d'envoi
     replyTo: 'mallemoussa091@gmail.com',  // Répondre à cette adresse
-    smtpHost: 'smtp.gmail.com',  // Host SMTP
-    smtpPort: '587',  // Port SMTP
-    smtpAuth: true,
-    smtpUser: 'mallemoussa091@gmail.com',
-    smtpPassword: 'mhiv thmu beap iuwy',
-    tls: true
                 )
             }
         }
