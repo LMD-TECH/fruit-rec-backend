@@ -128,7 +128,15 @@ pipeline {
                     body: """<p>Status: ${currentBuild.currentResult} for job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'</p>
                              <p>Check details at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
                     to: 'mallemoussa091@gmail.com',
-                    mimeType: 'text/html'
+                    mimeType: 'text/html',
+                    from: 'mallemoussa091@gmail.com',  // Adresse d'envoi
+    replyTo: 'mallemoussa091@gmail.com',  // Répondre à cette adresse
+    smtpHost: 'smtp.gmail.com',  // Host SMTP
+    smtpPort: '587',  // Port SMTP
+    smtpAuth: true,
+    smtpUser: 'mallemoussa091@gmail.com',
+    smtpPassword: 'mhiv thmu beap iuwy',
+    tls: true
                 )
             }
         }
