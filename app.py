@@ -19,19 +19,15 @@ load_dotenv()
 
 # Read environment variables
 STATIC_DIR = os.getenv('STATIC_DIR')
+origins = os.getenv('ALLOWED_ORIGINS', "").split(",")
+print("Origins", origins)
 
 # Logger setup
 logger = logging.getLogger(__name__)
 
-# Allowed origins for CORS
-origins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3000",
-]
-
 # Jinja2 templates setup
-templates = Jinja2Templates(directory="templates")  # Folder containing HTML files
+# Folder containing HTML files
+templates = Jinja2Templates(directory="templates")
 
 
 @asynccontextmanager

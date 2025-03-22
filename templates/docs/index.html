@@ -1,13 +1,12 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <title>Documentation Fruit Rec Api</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="app"></div>
 
     <!-- Load the Script -->
@@ -15,13 +14,12 @@
 
     <!-- Initialize the Scalar API Reference -->
     <script>
-        Scalar.createApiReference('#app', {
-            // The URL of the OpenAPI/Swagger document
-            url: '/openapi.json',
-            // Avoid CORS issues
-            proxyUrl: 'https://proxy.scalar.com',
-        })
+      Scalar.createApiReference("#app", {
+        // The URL of the OpenAPI/Swagger document
+        url: "/openapi.json",
+        // Avoid CORS issues
+        proxyUrl: "https://proxy.scalar.com",
+      });
     </script>
-</body>
-
+  </body>
 </html>
