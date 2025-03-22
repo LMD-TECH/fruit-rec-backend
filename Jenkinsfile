@@ -4,13 +4,13 @@ pipeline {
     agent any
 
     // Variables d'environnement globales
-    environment {
-        DOCKER_IMAGE = 'fruit-rec-api'  // Nom de l'image Docker à construire
-        DOCKER_USERNAME = 'lumeidatech'  // Nom d'utilisateur Docker Hub
-        DOCKER_CONTAINER = 'fruit-rec-api-container'  // Nom du conteneur déployé sur le VPS
-        DOCKER_CREDENTIALS = credentials('docker-hub-credentials-id')  // Identifiants Docker Hub
-        IMAGE_VERSION = "1.${BUILD_NUMBER}"  // Version dynamique basée sur le numéro de build Jenkins
-    }
+    // environment {
+    //     DOCKER_IMAGE = 'fruit-rec-api'  // Nom de l'image Docker à construire
+    //     DOCKER_USERNAME = 'lumeidatech'  // Nom d'utilisateur Docker Hub
+    //     DOCKER_CONTAINER = 'fruit-rec-api-container'  // Nom du conteneur déployé sur le VPS
+    //     DOCKER_CREDENTIALS = credentials('docker-hub-credentials-id')  // Identifiants Docker Hub
+    //     IMAGE_VERSION = "1.${BUILD_NUMBER}"  // Version dynamique basée sur le numéro de build Jenkins
+    // }
 
     // Étapes du pipeline
     stages {
@@ -18,7 +18,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Clone la branche 'main' du dépôt Git
-                git branch: 'main', url: 'https://github.com/LMD-TECH/fruit-rec-backend.git'
+                git branch: 'main', url: 'https://github.com/codeangel223/fruit-rec-app-back.git'
             }
         }
 
@@ -103,7 +103,7 @@ pipeline {
                             body: """<p>SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
                                      <p>Deployed image: $DOCKER_USERNAME/fruit-rec-api:${IMAGE_VERSION}</p>
                                      <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
-                            to: 'lumeida.tech0@gmail.com',
+                            to: 'mallemoussa091@gmail.com',
                             mimeType: 'text/html'
                         )
                     } else {
@@ -112,7 +112,7 @@ pipeline {
                             subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
                             body: """<p>FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
                                      <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
-                            to: 'lumeida.tech0@gmail.com',
+                            to: 'mallemoussa091@gmail.com',
                             mimeType: 'text/html'
                         )
                     }
