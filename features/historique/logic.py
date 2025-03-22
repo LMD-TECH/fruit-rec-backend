@@ -4,17 +4,18 @@ import os
 from fastapi import APIRouter, Response, Request, Depends, HTTPException, File, UploadFile
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session, joinedload
-from datetime import datetime
-import urllib.parse
 import uuid
 from typing import List
 from urllib.parse import urljoin
 from features.historique.models import Historique
 from features.uploads.models import Image
 from core.dbconfig import get_db
-from core.utils import get_auth_token_in_request, get_user_from_session
+from core.utils import chat_with_gemini, get_auth_token_in_request, get_user_from_session
 from features.auth.models import Utilisateur
+from .utils import encode_image_results, format_result
 from ..uploads.logic import create_image_file
+import pathlib
+from google.genai import types
 
 load_dotenv()
 
@@ -24,48 +25,6 @@ router = APIRouter(
     prefix="/api/activities",
     tags=["Activities"],
 )
-
-
-def format_result(results: List[dict]) -> List[str]:
-    fruit_counts = {}
-
-    for item in results:
-        name = item["fruit_name"]
-        quantity = int(item["quantity"])
-
-        if name in fruit_counts:
-            fruit_counts[name] += quantity
-        else:
-            fruit_counts[name] = quantity
-
-    formatted_fruits = [f"{qty} {fruit}" for fruit,
-                        qty in fruit_counts.items()]
-
-    return ", ".join(formatted_fruits) + "."
-
-
-def get_dict_result(results):
-    results_data = []
-    for r in results:
-        info = {}
-        info["quantity"] = r.split(",")[0]
-        info["fruit_name"] = r.split(",")[-1]
-        results_data.append(info)
-    return results_data
-
-
-def encode_image_results(images: list[Image]):
-    result_dict = []
-    for item in images:
-        res: str = item.resultat
-        results = res.split(";")
-        info_dict = {}
-        info_dict["img_id"] = str(item.id_image)
-        info_dict["image_url"] = str(item.image_path)
-        fruits = get_dict_result(results)
-        info_dict["fruits"] = fruits
-        result_dict.append(info_dict)
-    return result_dict
 
 
 @router.post("/create-activity/")
@@ -80,7 +39,6 @@ async def upload_images(
 
     user: Utilisateur = get_user_from_session(session, token)
 
-    print("OwerFiles", files)
     if not files:
         raise HTTPException(status_code=400, detail="Aucun fichier téléversé")
 
@@ -95,20 +53,18 @@ async def upload_images(
 
     images = []
     for path in file_paths:
-        # les fruits sont separé par des ; [puis les infos(la quantité et le nom) sur chaque fruit sont separé par des , simples]
+        prompt = "Analyse cette image et identifie les fruits présents. Fournis le résultat strictement au format suivant : 'quantité,nom_du_fruit;quantité,nom_du_fruit;...'. Assure-toi d'utiliser des noms simples et reconnaissables pour chaque fruit. Si aucun fruit n'est détecté, renvoie exactement cette chaîne sans modification : 'aucun,fruit détecté'"
 
-        fruits = [
-            {
-                "quantity": 1,
-                "name": "Banane"
-            },
-            {
-                "quantity": 1,
-                "name": "Pomme"
-            },
-        ]
-        result = "5,bananes mûres;3,pommes vertes;6,autres fruits"  # Call api ici
-        image = Image(image_path=path, id_image=uuid.uuid4(), resultat=result)
+        b64_image = types.Part.from_bytes(
+            data=pathlib.Path(path[1:]).read_bytes(),
+            mime_type="image/jpeg"
+        )
+
+        contents = [prompt, b64_image]
+        result = chat_with_gemini(contents)
+        # fake_result = "5,bananes mûres;3,pommes vertes;6,autres fruits"
+        image = Image(image_path=path,
+                      id_image=uuid.uuid4(), resultat=result)
         images.append(image)
 
     result_dict = encode_image_results(images)
