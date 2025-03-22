@@ -98,7 +98,7 @@ pipeline {
                 body: """<p>SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
                             <p>Deployed image: $DOCKER_USERNAME/fruit-rec-api:${IMAGE_VERSION}</p>
                             <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
-                to: 'lumeida.tech0@gmail.com,codeangel223@gmail.com,mallemoussa091@gmail.com',
+                to: 'lumeida.tech@gmail.com,codeangel223@gmail.com,mallemoussa091@gmail.com',
                 mimeType: 'text/html'
             )
         }
@@ -107,7 +107,7 @@ pipeline {
                 subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
                 body: """<p>FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
                             <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
-                to: 'lumeida.tech0@gmail.com,codeangel223@gmail.com,mallemoussa091@gmail.com',
+                to: 'lumeida.tech@gmail.com,codeangel223@gmail.com,mallemoussa091@gmail.com',
                 mimeType: 'text/html'
             )
         }
