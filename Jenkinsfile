@@ -8,8 +8,8 @@ pipeline {
         DOCKER_IMAGE = 'fruit-rec-api'  // Nom de l'image Docker à construire
         DOCKER_USERNAME = 'lumeidatech'  // Nom d'utilisateur Docker Hub
         DOCKER_CONTAINER = 'fruit-rec-api-container'  // Nom du conteneur déployé sur le VPS
-        DOCKER_CREDENTIALS = credentials('docker-hub-credentials-id')  // Identifiants Docker Hub
-        IMAGE_VERSION = "1.${BUILD_NUMBER}"  // Version dynamique basée sur le numéro de build Jenkins
+        // DOCKER_CREDENTIALS = credentials('docker-hub-credentials-id')  // Identifiants Docker Hub
+        // IMAGE_VERSION = "1.${BUILD_NUMBER}"  // Version dynamique basée sur le numéro de build Jenkins
     }
 
     // Étapes du pipeline
