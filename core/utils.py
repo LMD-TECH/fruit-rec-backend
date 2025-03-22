@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from fastapi import HTTPException, Request, status , Depends
+from fastapi import HTTPException, Request, status, Depends
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 import smtplib
@@ -87,6 +87,7 @@ def validate_phone_number(phone_number):
 
 
 def get_user(email: str, session):
+
     return session.query(Utilisateur).filter(
         Utilisateur.email == email).first()
 
@@ -126,6 +127,7 @@ def get_auth_token_in_request(request: Request):
             details="Invalid bearer", status_code=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
     return token
 
+
 def chat_with_gemini(contents: list = []) -> str:
     result = ""
     try:
@@ -138,11 +140,13 @@ def chat_with_gemini(contents: list = []) -> str:
     except Exception as e:
         result = "aucun,fruit,détecté;"
     return result
-  
+
+
 # Security setup
 security = HTTPBasic()
 VALID_USERNAME = "admin"
 VALID_PASSWORD = "secretpassword"
+
 
 def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)):
     if credentials.username != VALID_USERNAME or credentials.password != VALID_PASSWORD:
@@ -152,4 +156,3 @@ def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)):
             headers={"WWW-Authenticate": "Basic"},
         )
     return True
-
