@@ -1,5 +1,7 @@
 import logging
-from fastapi import FastAPI, Request, status
+from core.utils import verify_credentials
+from fastapi import FastAPI, Request, status ,Depends, HTTPException
+
 from fastapi.responses import JSONResponse
 from core.dbconfig import create_tables
 from fastapi.staticfiles import StaticFiles
@@ -9,6 +11,9 @@ from features.historique.logic import router as activities_router
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 import os
+from fastapi.templating import Jinja2Templates
+
+templates = Jinja2Templates(directory="templates")  # Folder containing HTML files
 
 load_dotenv()
 
@@ -18,7 +23,6 @@ STATIC_DIR = os.getenv('STATIC_DIR')
 
 logger = logging.getLogger(__name__)
 
-# app = FastAPI(title="API Fruit Rec")
 
 origins = [
     "http://localhost:3000",
@@ -33,7 +37,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="API Fruit Rec", lifespan=lifespan)
+app = FastAPI(title="API Fruit Rec", lifespan=lifespan,docs_url=None)
 
 app.add_middleware(
     CORSMiddleware,
@@ -45,13 +49,6 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(activities_router)
-
-# TODO: revoir la methode de demarrage de l'app -> le deco
-
-
-# @app.on_event("startup")
-# def startup():
-#     create_tables()
 
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name=STATIC_DIR)
@@ -71,3 +68,7 @@ async def custom_internal_error_handler(request: Request, exc: Exception) -> JSO
             "message": f"{str(exc)}"
         }
     )
+    
+@app.get("/docs", include_in_schema=False)
+async def docs(request: Request,authenticated: bool = Depends(verify_credentials)):
+    return templates.TemplateResponse("docs/index.html",{"request": request})

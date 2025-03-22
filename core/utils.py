@@ -1,6 +1,8 @@
 import os
 from dotenv import load_dotenv
-from fastapi import HTTPException, Request, status
+from fastapi import HTTPException, Request, status , Depends
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -121,3 +123,18 @@ def get_auth_token_in_request(request: Request):
         raise HTTPException(
             details="Invalid bearer", status_code=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
     return token
+
+
+# Security setup
+security = HTTPBasic()
+VALID_USERNAME = "admin"
+VALID_PASSWORD = "secretpassword"
+
+def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)):
+    if credentials.username != VALID_USERNAME or credentials.password != VALID_PASSWORD:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return True
