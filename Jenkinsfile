@@ -8,8 +8,8 @@ pipeline {
         DOCKER_IMAGE = 'fruit-rec-api'  // Nom de l'image Docker à construire
         DOCKER_USERNAME = 'lumeidatech'  // Nom d'utilisateur Docker Hub
         DOCKER_CONTAINER = 'fruit-rec-api-container'  // Nom du conteneur déployé sur le VPS
-        // DOCKER_CREDENTIALS = credentials('docker-hub-credentials-id')  // Identifiants Docker Hub
-        // IMAGE_VERSION = "1.${BUILD_NUMBER}"  // Version dynamique basée sur le numéro de build Jenkins
+    // DOCKER_CREDENTIALS = credentials('docker-hub-credentials-id')  // Identifiants Docker Hub
+    // IMAGE_VERSION = "1.${BUILD_NUMBER}"  // Version dynamique basée sur le numéro de build Jenkins
     }
 
     // Étapes du pipeline
@@ -91,48 +91,42 @@ pipeline {
             }
         }
 
-        // Étape 5 : Notification par email
-        // stage('Notify') {
-        //     steps {
-        //         script {
-        //             // Vérifie le statut du pipeline pour envoyer l'email approprié
-        //             if (currentBuild.currentResult == 'SUCCESS') {
-        //                 // Email en cas de succès
-        //                 emailext(
-        //                     subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-        //                     body: """<p>SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
-        //                              <p>Deployed image: $DOCKER_USERNAME/fruit-rec-api:${IMAGE_VERSION}</p>
-        //                              <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
-        //                     to: 'lumeida.tech0@gmail.com',
-        //                     mimeType: 'text/html'
-        //                 )
-        //             } else {
-        //                 // Email en cas d'échec
-        //                 emailext(
-        //                     subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-        //                     body: """<p>FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
-        //                              <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
-        //                     to: 'lumeida.tech0@gmail.com',
-        //                     mimeType: 'text/html'
-        //                 )
-        //             }
-        //         }
-        //     }
-        // }
+    // Étape 5 : Notification par email
+    // stage('Notify') {
+    //     steps {
+    //         script {
+    //             // Vérifie le statut du pipeline pour envoyer l'email approprié
+    //             if (currentBuild.currentResult == 'SUCCESS') {
+    //                 // Email en cas de succès
+    //                 emailext(
+    //                     subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+    //                     body: """<p>SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+    //                              <p>Deployed image: $DOCKER_USERNAME/fruit-rec-api:${IMAGE_VERSION}</p>
+    //                              <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
+    //                     to: 'lumeida.tech0@gmail.com',
+    //                     mimeType: 'text/html'
+    //                 )
+    //             } else {
+    //                 // Email en cas d'échec
+    //                 emailext(
+    //                     subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+    //                     body: """<p>FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+    //                              <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
+    //                     to: 'lumeida.tech0@gmail.com',
+    //                     mimeType: 'text/html'
+    //                 )
+    //             }
+    //         }
+    //     }
+    // }
     }
     post {
-        always {
-            script {
-                emailext(
-                    subject: "${currentBuild.currentResult}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                    body: """<p>Status: ${currentBuild.currentResult} for job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'</p>
-                             <p>Check details at <a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
-                    to: 'mallemoussa091@gmail.com',
-                    mimeType: 'text/html',
-                    from: 'mallemoussa091@gmail.com',  // Adresse d'envoi
-    replyTo: 'mallemoussa091@gmail.com',  // Répondre à cette adresse
-                )
-            }
+        failure {
+            emailext(
+      to: 'codeangel223@gmail.com',
+      subject: "Échec du build : ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+      body: "Le build a échoué. Vérifiez ici : ${env.BUILD_URL}"
+    )
         }
     }
 }
