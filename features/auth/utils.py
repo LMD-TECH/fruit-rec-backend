@@ -44,9 +44,9 @@ def verify_jwt(token, key=SECRET_KEY, algorithms=ALGORITHM):
 
 def authenticate_user(email: str, mot_de_passe: str, session):
     user: Utilisateur = get_user(email, session)
-    print("User Found", user.email_verified)
     if not user:
         return False
+
     if not user.email_verified:
         # return False
         raise HTTPException(
@@ -55,5 +55,4 @@ def authenticate_user(email: str, mot_de_passe: str, session):
     mot_de_passe_correspond = verify_password(mot_de_passe, user.mot_de_passe)
     if not mot_de_passe_correspond:
         return False
-
     return user
