@@ -123,7 +123,8 @@ pipeline {
     post {
         failure {
             emailext(
-      to: 'codeangel223@gmail.com',
+      to: 'contact@codeangel.pro',
+    //   to: 'codeangel223@gmail.com',
       subject: "Échec du build : ${env.JOB_NAME} #${env.BUILD_NUMBER}",
       body: "Le build a échoué. Vérifiez ici : ${env.BUILD_URL}"
     )
