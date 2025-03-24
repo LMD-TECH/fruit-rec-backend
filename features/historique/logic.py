@@ -28,7 +28,7 @@ router = APIRouter(
 
 
 @router.post("/create-activity/")
-async def upload_images(
+async def create_activity(
     request: Request,
     response: Response,
     files: List[UploadFile] = File(...),

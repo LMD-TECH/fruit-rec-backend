@@ -131,8 +131,8 @@ def get_auth_token_in_request(request: Request):
 def chat_with_gemini(contents: list = []) -> str:
     result = ""
     try:
-        client = genai.Client(
-            api_key=GEMINI_API_KEY)
+        client = genai.Client(api_key=GEMINI_API_KEY)
+
         response = client.models.generate_content(
             model="gemini-2.0-flash-exp", contents=contents)
         result = response.text
