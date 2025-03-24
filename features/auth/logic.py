@@ -1,6 +1,6 @@
 
 from datetime import datetime
-from fastapi import APIRouter, Response, Request, Depends, HTTPException, status, File, UploadFile, Form, Cookie
+from fastapi import APIRouter, BackgroundTasks, Response, Request, Depends, HTTPException, status, File, UploadFile, Form, Cookie
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import EmailStr
 from sqlalchemy.orm import Session
@@ -201,6 +201,7 @@ def validate_email(token: str | None, request: Request, session: Session = Depen
 async def register(
     response: Response,
     requests: Request,
+    background_tasks: BackgroundTasks,
     nom_famille: Annotated[str, Form()],
     numero_telephone: Annotated[str, Form()],
     prenom: Annotated[str, Form()],
@@ -247,9 +248,11 @@ async def register(
 
         msg = make_message(
             "Votre compte a été crée avec succès.", content, to=email)
-        email_result = send_email(msg, email,)
+        background_tasks.add_task(send_email, msg, email)
+        # email_result = send_email(msg, email,)
+        # return {"message": "Utilisateur créé avec success.", "token": token, "email": email_result}
 
-        return {"message": "Utilisateur créé avec success.", "token": token, "email": email_result}
+        return {"message": "Utilisateur créé avec success.", "token": token, }
     except HTTPException as e:
         response.status_code = e.status_code
         return e

@@ -20,8 +20,6 @@ load_dotenv()
 # Read environment variables
 STATIC_DIR = os.getenv('STATIC_DIR')
 origins = os.getenv('ALLOWED_ORIGINS', "").split(",")
-print("Origins", origins)
-
 # Logger setup
 logger = logging.getLogger(__name__)
 
