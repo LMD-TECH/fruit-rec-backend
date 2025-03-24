@@ -13,12 +13,12 @@
   - [x] Tester la création d'activité
   - [x] Tester la recuperation des activités (avec les stats)
 - [x] Mettre à jour ses informations de profile
-- [ ] Créer une activité
+- [x] Créer une activité
   - [x] Recuperation de Images (Upload)
   - [x] Obtenir les resultats
   - [x] Sauvegarder l'activité
   - [x] Exposer l'Endpoint
-  - [ ] Interoger le model avec ces Images
+  - [x] Interoger le model avec ces Images
 - [x] Voir les resultats d'une activité
 - [x] Voir l'historique de ses activité
   
